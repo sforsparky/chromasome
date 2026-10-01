@@ -1,0 +1,37 @@
+// All user-facing brand strings live here so the vocabulary stays consistent.
+export const copy = {
+  appName: 'Chromasome',
+  tagline: 'Color, in my DNA.',
+  brand: 'In My DNA',
+  brandUrl: 'https://inmydna.com',
+  brandHost: 'inmydna.com',
+
+  mutate: 'Mutate',
+  mutateHint: 'Press space',
+  lock: 'Lock',
+  unlock: 'Unlock',
+  strand: 'strand',
+  extractDna: 'Extract DNA',
+  colorCode: 'Color code',
+  export: 'Export',
+  undo: 'Undo',
+  redo: 'Redo',
+  adjust: 'Adjust',
+  remove: 'Remove',
+  add: 'Add color',
+  moveLeft: 'Move left',
+  moveRight: 'Move right',
+  drag: 'Drag to reorder',
+
+  toastCopiedHex: (hex: string) => `Copied ${hex}`,
+  toastCopiedCode: 'Color code copied',
+  toastCopied: 'Copied',
+  toastDownloaded: 'Downloaded',
+  toastBadImage: 'That file is not an image',
+  toastImageTooBig: 'Image is too big (max 20 MB)',
+  toastExtractFailed: 'Could not read that image',
+
+  useStrand: 'Use this strand',
+  dropImage: 'Drop an image here or click to choose one',
+  extracting: 'Reading DNA…',
+} as const
