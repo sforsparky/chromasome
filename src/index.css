@@ -867,21 +867,42 @@ button:disabled {
     position: static;
     transform: none;
     flex-direction: row;
+    gap: 0;
     opacity: 1;
     order: 2;
+    flex: 0 0 auto;
   }
 
+  .column__btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Hex above name on the left; nothing wraps, the name truncates if it must. */
   .column__info {
-    flex-direction: row;
-    align-items: baseline;
-    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
     padding: 0;
     width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
     order: 1;
+    text-align: left;
   }
 
   .column__hex {
     font-size: 16px;
+    padding: 4px 6px;
+    margin-left: -6px;
+    white-space: nowrap;
+  }
+
+  .column__name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
   .inserter {
