@@ -21,6 +21,8 @@ export const copy = {
   add: 'Add color',
   moveLeft: 'Move left',
   moveRight: 'Move right',
+  moveUp: 'Move up',
+  moveDown: 'Move down',
   drag: 'Drag to reorder',
 
   toastCopiedHex: (hex: string) => `Copied ${hex}`,

@@ -252,6 +252,21 @@ button:disabled {
 
 .column__btn--drag {
   cursor: grab;
+  touch-action: none; /* a touch on the handle drags; the page must not scroll instead */
+}
+
+.board--dragging {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grabbing;
+}
+
+.board--dragging .column__btn--drag {
+  cursor: grabbing;
+}
+
+.board--dragging .column__controls {
+  opacity: 1;
 }
 
 .column__btn--lock.is-on {
@@ -854,10 +869,6 @@ button:disabled {
     flex-direction: row;
     opacity: 1;
     order: 2;
-  }
-
-  .column__move {
-    display: none;
   }
 
   .column__info {
