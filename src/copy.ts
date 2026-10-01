@@ -4,6 +4,8 @@ export const copy = {
   brand: 'In My DNA',
   brandUrl: 'https://inmydna.com',
   brandHost: 'inmydna.com',
+  coffee: 'Buy me a coffee',
+  coffeeUrl: 'https://www.buymeacoffee.com/mguiller2',
 
   mutate: 'Mutate',
   mutateHint: 'Press space',

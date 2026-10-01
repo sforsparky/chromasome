@@ -107,8 +107,45 @@ button:disabled {
   font-size: 18px;
 }
 
-.header__by {
+/* Quiet support link: muted like the rest of the header, the cup warms to coffee-yellow on hover. */
+.header__coffee {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  transition:
+    color var(--t-fast) ease,
+    border-color var(--t-fast) ease,
+    transform var(--t-press) var(--ease-out);
+}
+
+.header__coffee svg {
+  transition: color var(--t-fast) ease;
+}
+
+.header__coffee:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .header__coffee:hover {
+    color: var(--fg);
+    border-color: var(--border);
+  }
+
+  .header__coffee:hover svg {
+    color: #ffdd00;
+  }
+}
+
+.header__by {
   color: var(--muted);
   text-decoration: none;
   font-size: 13px;
@@ -849,6 +886,15 @@ button:disabled {
 @media (max-width: 700px) {
   :root {
     --toolbar-h: 112px;
+  }
+
+  /* Icon only on phones; the label stays available to screen readers via aria-label. */
+  .header__coffee-label {
+    display: none;
+  }
+
+  .header__coffee {
+    padding: 0 8px;
   }
 
   .board {
