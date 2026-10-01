@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type DragEvent } from 'react'
 import { copy } from '../copy'
 import { textColorFor } from '../lib/color/contrast'
 import { extractPalette, MAX_IMAGE_BYTES } from '../lib/extract/fromImage'
@@ -112,8 +112,8 @@ export function ExtractDialog({ open, onClose }: Props) {
 
         {hexes && (
           <div className="extract__strand" aria-label="Extracted colors">
-            {hexes.map((hex) => (
-              <div key={hex} className="extract__swatch" style={{ backgroundColor: hex, color: textColorFor(hex) }}>
+            {hexes.map((hex, i) => (
+              <div key={hex} className="extract__swatch" style={{ backgroundColor: hex, color: textColorFor(hex), '--i': i } as CSSProperties}>
                 {hex.slice(1).toUpperCase()}
               </div>
             ))}

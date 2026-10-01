@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useState, type DragEvent } from 'react'
+import { Fragment, useCallback, useEffect, useState, type DragEvent } from 'react'
 import { usePalette } from '../state/PaletteProvider'
 import { ColorColumn } from './ColorColumn'
 import { ColumnInserter } from './ColumnInserter'
@@ -12,6 +12,13 @@ export function PaletteBoard({ adjustingId, onAdjust }: Props) {
   const { palette, dispatch } = usePalette()
   const [dragFrom, setDragFrom] = useState<number | null>(null)
   const [dragOver, setDragOver] = useState<number | null>(null)
+
+  // First-load reveal: the intro cascade runs once, then columns enter plainly.
+  const [intro, setIntro] = useState(true)
+  useEffect(() => {
+    const t = window.setTimeout(() => setIntro(false), 1200)
+    return () => window.clearTimeout(t)
+  }, [])
 
   const onDragStart = useCallback((index: number) => setDragFrom(index), [])
 
@@ -40,7 +47,7 @@ export function PaletteBoard({ adjustingId, onAdjust }: Props) {
   }
 
   return (
-    <main className="board" role="list" aria-label="Palette" onDragEnd={onDragEnd}>
+    <main className={`board${intro ? ' board--intro' : ''}`} role="list" aria-label="Palette" onDragEnd={onDragEnd}>
       {palette.map((swatch, i) => (
         <Fragment key={swatch.id}>
           {i > 0 && <ColumnInserter index={i} />}

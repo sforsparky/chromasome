@@ -1,4 +1,4 @@
-import { useCallback, type DragEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type DragEvent } from 'react'
 import { copy } from '../copy'
 import { textColorFor } from '../lib/color/contrast'
 import { nearestName } from '../lib/color/names'
@@ -7,7 +7,6 @@ import { usePalette } from '../state/PaletteProvider'
 import { MIN_COLORS, type Swatch } from '../state/types'
 import { AdjustPanel } from './AdjustPanel'
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, GripIcon, LockIcon, SlidersIcon, UnlockIcon } from './Icons'
-import { useToast } from './Toast'
 
 type Props = {
   swatch: Swatch
@@ -21,16 +20,50 @@ type Props = {
   dropTarget: boolean
 }
 
+const SWAP_MS = 200 // matches .column__hex-label transition
+const COPIED_HOLD_MS = 900
+
+/**
+ * Swap the hex readout to "Copied" and back through a blurred crossfade.
+ * Returns the label to show and whether a swap is in flight.
+ */
+function useCopiedLabel(): { copied: boolean; swapping: boolean; flash: () => void } {
+  const [copied, setCopied] = useState(false)
+  const [swapping, setSwapping] = useState(false)
+  const timers = useRef<number[]>([])
+
+  const clear = () => {
+    timers.current.forEach((t) => window.clearTimeout(t))
+    timers.current = []
+  }
+  useEffect(() => clear, [])
+
+  const swapTo = useCallback((value: boolean, after: number) => {
+    const t1 = window.setTimeout(() => setSwapping(true), after)
+    const t2 = window.setTimeout(() => setCopied(value), after + SWAP_MS / 2)
+    const t3 = window.setTimeout(() => setSwapping(false), after + SWAP_MS)
+    timers.current.push(t1, t2, t3)
+  }, [])
+
+  const flash = useCallback(() => {
+    clear()
+    swapTo(true, 0)
+    swapTo(false, SWAP_MS + COPIED_HOLD_MS)
+  }, [swapTo])
+
+  return { copied, swapping, flash }
+}
+
 export function ColorColumn({ swatch, index, adjusting, onAdjust, onDragStart, onDragOver, onDrop, dragging, dropTarget }: Props) {
   const { palette, dispatch } = usePalette()
-  const toast = useToast()
   const text = textColorFor(swatch.hex)
   const name = nearestName(swatch.hex)
   const n = palette.length
+  const { copied, swapping, flash } = useCopiedLabel()
 
   const copyHex = async () => {
     await copyText(swatch.hex)
-    toast.show(copy.toastCopiedHex(swatch.hex))
+    flash()
   }
 
   const closeAdjust = useCallback(() => onAdjust(null), [onAdjust])
@@ -42,7 +75,7 @@ export function ColorColumn({ swatch, index, adjusting, onAdjust, onDragStart, o
   return (
     <div
       className={cls}
-      style={{ backgroundColor: swatch.hex, color: text }}
+      style={{ backgroundColor: swatch.hex, color: text, '--i': index } as CSSProperties}
       role="listitem"
       aria-label={`${swatch.hex} ${name}${swatch.locked ? ', locked' : ''}`}
       onDragOver={(e) => onDragOver(e, index)}
@@ -90,15 +123,27 @@ export function ColorColumn({ swatch, index, adjusting, onAdjust, onDragStart, o
           aria-label={swatch.locked ? copy.unlock : copy.lock}
           title={swatch.locked ? copy.unlock : copy.lock}
         >
-          {swatch.locked ? <LockIcon /> : <UnlockIcon />}
+          {swatch.locked ? <LockIcon key="on" /> : <UnlockIcon key="off" />}
         </button>
       </div>
 
       {adjusting && <AdjustPanel swatch={swatch} onClose={closeAdjust} />}
 
       <div className="column__info">
-        <button type="button" className="column__hex" onClick={copyHex} title="Copy hex">
-          {swatch.hex.slice(1).toUpperCase()}
+        <button type="button" className="column__hex" onClick={copyHex} title="Copy hex" aria-label={`Copy ${swatch.hex}`}>
+          <span className={`column__hex-label${swapping ? ' column__hex-label--swapping' : ''}`} aria-live="polite">
+            {copied
+              ? copy.toastCopied
+              : swatch.hex
+                  .slice(1)
+                  .toUpperCase()
+                  .split('')
+                  .map((ch, g) => (
+                    <span key={g} className="glyph" style={{ '--g': g } as CSSProperties}>
+                      {ch}
+                    </span>
+                  ))}
+          </span>
         </button>
         <span className="column__name">{name}</span>
       </div>

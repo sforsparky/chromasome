@@ -1,9 +1,12 @@
 export async function copyText(text: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text)
-    return
+    try {
+      await navigator.clipboard.writeText(text)
+      return
+    } catch {
+      /* permission denied or insecure context: fall through to execCommand */
+    }
   }
-  // Fallback for insecure contexts.
   const ta = document.createElement('textarea')
   ta.value = text
   ta.setAttribute('readonly', '')
