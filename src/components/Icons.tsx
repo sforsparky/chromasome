@@ -56,6 +56,18 @@ export const ChevronRightIcon = (p: IconProps) => (
   </svg>
 )
 
+export const ChevronUpIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="m6 15 6-6 6 6" />
+  </svg>
+)
+
+export const ChevronDownIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+)
+
 export const GripIcon = (p: IconProps) => (
   <svg {...base(p)}>
     <circle cx="9" cy="6" r="1.2" fill="currentColor" />

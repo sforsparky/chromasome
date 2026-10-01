@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type DragEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { copy } from '../copy'
 import { textColorFor } from '../lib/color/contrast'
 import { nearestName } from '../lib/color/names'
@@ -6,16 +6,23 @@ import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
 import { MIN_COLORS, type Swatch } from '../state/types'
 import { AdjustPanel } from './AdjustPanel'
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, GripIcon, LockIcon, SlidersIcon, UnlockIcon } from './Icons'
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, CloseIcon, GripIcon, LockIcon, SlidersIcon, UnlockIcon } from './Icons'
+
+export type DragHandlers = {
+  onPointerDown: (index: number, e: PointerEvent<HTMLElement>) => void
+  onPointerMove: (e: PointerEvent<HTMLElement>) => void
+  onPointerUp: (e: PointerEvent<HTMLElement>) => void
+  onPointerCancel: () => void
+}
 
 type Props = {
   swatch: Swatch
   index: number
+  /** Columns are stacked vertically (phone layout), so "left/right" reads as "up/down". */
+  stacked: boolean
   adjusting: boolean
   onAdjust: (id: string | null) => void
-  onDragStart: (index: number) => void
-  onDragOver: (e: DragEvent, index: number) => void
-  onDrop: (index: number) => void
+  drag: DragHandlers
   dragging: boolean
   dropTarget: boolean
 }
@@ -54,7 +61,7 @@ function useCopiedLabel(): { copied: boolean; swapping: boolean; flash: () => vo
   return { copied, swapping, flash }
 }
 
-export function ColorColumn({ swatch, index, adjusting, onAdjust, onDragStart, onDragOver, onDrop, dragging, dropTarget }: Props) {
+export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag, dragging, dropTarget }: Props) {
   const { palette, dispatch } = usePalette()
   const text = textColorFor(swatch.hex)
   const name = nearestName(swatch.hex)
@@ -78,22 +85,15 @@ export function ColorColumn({ swatch, index, adjusting, onAdjust, onDragStart, o
       style={{ backgroundColor: swatch.hex, color: text, '--i': index } as CSSProperties}
       role="listitem"
       aria-label={`${swatch.hex} ${name}${swatch.locked ? ', locked' : ''}`}
-      onDragOver={(e) => onDragOver(e, index)}
-      onDrop={(e) => {
-        e.preventDefault()
-        onDrop(index)
-      }}
     >
       <div className="column__controls">
         <button
           type="button"
           className="column__btn column__btn--drag"
-          draggable
-          onDragStart={(e) => {
-            e.dataTransfer.effectAllowed = 'move'
-            e.dataTransfer.setData('text/plain', String(index))
-            onDragStart(index)
-          }}
+          onPointerDown={(e) => drag.onPointerDown(index, e)}
+          onPointerMove={drag.onPointerMove}
+          onPointerUp={drag.onPointerUp}
+          onPointerCancel={drag.onPointerCancel}
           aria-label={copy.drag}
           title={copy.drag}
         >
@@ -108,11 +108,25 @@ export function ColorColumn({ swatch, index, adjusting, onAdjust, onDragStart, o
           <SlidersIcon />
         </button>
         <div className="column__move">
-          <button type="button" className="column__btn" onClick={() => dispatch({ type: 'MOVE', from: index, to: index - 1 })} disabled={index === 0} aria-label={copy.moveLeft} title={copy.moveLeft}>
-            <ChevronLeftIcon />
+          <button
+            type="button"
+            className="column__btn"
+            onClick={() => dispatch({ type: 'MOVE', from: index, to: index - 1 })}
+            disabled={index === 0}
+            aria-label={stacked ? copy.moveUp : copy.moveLeft}
+            title={stacked ? copy.moveUp : copy.moveLeft}
+          >
+            {stacked ? <ChevronUpIcon /> : <ChevronLeftIcon />}
           </button>
-          <button type="button" className="column__btn" onClick={() => dispatch({ type: 'MOVE', from: index, to: index + 1 })} disabled={index === n - 1} aria-label={copy.moveRight} title={copy.moveRight}>
-            <ChevronRightIcon />
+          <button
+            type="button"
+            className="column__btn"
+            onClick={() => dispatch({ type: 'MOVE', from: index, to: index + 1 })}
+            disabled={index === n - 1}
+            aria-label={stacked ? copy.moveDown : copy.moveRight}
+            title={stacked ? copy.moveDown : copy.moveRight}
+          >
+            {stacked ? <ChevronDownIcon /> : <ChevronRightIcon />}
           </button>
         </div>
         <button
