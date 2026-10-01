@@ -70,6 +70,25 @@ export function generatePalette(current: Palette, rng: Rng = Math.random): Palet
   })
 }
 
+/**
+ * Intermediate "candidate" colors shown while a column is sequencing: same
+ * hue family as the final color but visibly different, so the flicker reads
+ * as searching rather than random noise. Never returns the final color itself.
+ */
+export function candidateColors(finalHex: string, n: number, rng: Rng = Math.random): string[] {
+  const base = hexToHsl(finalHex)
+  const out: string[] = []
+  let guard = 0
+  while (out.length < n && guard++ < n * 10) {
+    const h = (base.h + rand(-28, 28, rng) + 360) % 360
+    const l = clamp(base.l + (rng() < 0.5 ? -1 : 1) * rand(0.14, 0.3, rng), 0.1, 0.92)
+    const s = clamp(base.s + rand(-0.25, 0.25, rng), 0.15, 0.95)
+    const hex = hslToHex({ h, s, l })
+    if (hex !== finalHex && !out.includes(hex)) out.push(hex)
+  }
+  return out
+}
+
 /** A color roughly between two neighbors in HSL space, used when inserting a column. */
 export function betweenColors(leftHex: string | undefined, rightHex: string | undefined, rng: Rng = Math.random): string {
   if (leftHex && rightHex) {

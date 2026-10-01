@@ -121,6 +121,133 @@ button:disabled {
   opacity: 0.5;
 }
 
+/* Sequencing animation ---------------------------------------------- */
+
+.column--seq-lock,
+.column--seq-settle {
+  transition: background-color 0.15s ease;
+}
+
+.column--seq-scan {
+  transition: none;
+}
+
+.column__scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  top: 0;
+  background: currentColor;
+  opacity: 0.85;
+  box-shadow:
+    0 0 10px currentColor,
+    0 0 28px currentColor;
+  animation: seq-scan 0.35s linear infinite;
+  pointer-events: none;
+}
+
+.column--seq-lock .column__scan {
+  animation-duration: 0.2s;
+  opacity: 0.4;
+}
+
+@keyframes seq-scan {
+  from {
+    top: 0;
+  }
+  to {
+    top: 100%;
+  }
+}
+
+.column__band {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 118px;
+  height: 2px;
+  background: currentColor;
+  opacity: 0;
+  animation: seq-band 0.3s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes seq-band {
+  0% {
+    opacity: 0.9;
+    transform: scaleX(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+.glyph {
+  display: inline-block;
+  min-width: 0.62em;
+  text-align: center;
+}
+
+.glyph--noise {
+  opacity: 0.55;
+}
+
+.glyph--set {
+  animation: seq-tick 0.18s ease-out;
+}
+
+@keyframes seq-tick {
+  0% {
+    transform: translateY(-3px) scale(1.15);
+    filter: brightness(1.6);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+
+.column--sequencing .column__name {
+  opacity: 0;
+}
+
+.column__name {
+  transition: opacity 0.2s ease;
+}
+
+.column--seq-skipped .column__btn--lock {
+  animation: seq-lock-pulse 0.5s ease-out;
+}
+
+@keyframes seq-lock-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 60%, transparent);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 14px color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+
+.column--seq-skipped .column__controls {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .column__scan,
+  .column__band,
+  .glyph--set,
+  .column--seq-skipped .column__btn--lock {
+    animation: none;
+  }
+  .column--sequencing .column__name {
+    opacity: 0.75;
+  }
+}
+
 .column--drop-target::before {
   content: '';
   position: absolute;
@@ -215,6 +342,7 @@ button:disabled {
 .column__name {
   font-size: 13px;
   opacity: 0.75;
+  min-height: 1.2em;
 }
 
 /* Inserter ----------------------------------------------------------- */

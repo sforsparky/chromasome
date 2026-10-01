@@ -6,6 +6,8 @@ export type State = {
   past: Palette[]
   present: Palette
   future: Palette[]
+  /** Bumped whenever a whole new strand arrives (mutate, load); drives the sequencing animation. */
+  generation: number
 }
 
 export type Action =
@@ -24,7 +26,7 @@ export type Action =
 function commit(state: State, next: Palette): State {
   const past = [...state.past, state.present]
   if (past.length > HISTORY_LIMIT) past.splice(0, past.length - HISTORY_LIMIT)
-  return { past, present: next, future: [] }
+  return { ...state, past, present: next, future: [] }
 }
 
 export function initState(hexes?: string[] | null): State {
@@ -32,14 +34,14 @@ export function initState(hexes?: string[] | null): State {
   const present = seed
     ? seed.map((h) => makeSwatch(normalizeHex(h)))
     : generatePalette(Array.from({ length: DEFAULT_COLORS }, () => makeSwatch('#000000')))
-  return { past: [], present, future: [] }
+  return { past: [], present, future: [], generation: 0 }
 }
 
 export function reducer(state: State, action: Action): State {
   const { present } = state
   switch (action.type) {
     case 'MUTATE':
-      return commit(state, generatePalette(present))
+      return { ...commit(state, generatePalette(present)), generation: state.generation + 1 }
 
     case 'TOGGLE_LOCK':
       return {
@@ -84,22 +86,25 @@ export function reducer(state: State, action: Action): State {
     case 'LOAD': {
       const hexes = action.hexes
       if (hexes.length < MIN_COLORS || hexes.length > MAX_COLORS) return state
-      return commit(
-        state,
-        hexes.map((h) => makeSwatch(normalizeHex(h))),
-      )
+      return {
+        ...commit(
+          state,
+          hexes.map((h) => makeSwatch(normalizeHex(h))),
+        ),
+        generation: state.generation + 1,
+      }
     }
 
     case 'UNDO': {
       if (state.past.length === 0) return state
       const previous = state.past[state.past.length - 1]
-      return { past: state.past.slice(0, -1), present: previous, future: [present, ...state.future] }
+      return { ...state, past: state.past.slice(0, -1), present: previous, future: [present, ...state.future] }
     }
 
     case 'REDO': {
       if (state.future.length === 0) return state
       const [next, ...rest] = state.future
-      return { past: [...state.past, present], present: next, future: rest }
+      return { ...state, past: [...state.past, present], present: next, future: rest }
     }
   }
 }

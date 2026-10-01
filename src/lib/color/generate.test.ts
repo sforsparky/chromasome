@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { betweenColors, generatePalette } from './generate'
+import { betweenColors, candidateColors, generatePalette } from './generate'
 import { hexToHsl, isValidHex } from './convert'
 import { seededRng } from './random'
 import type { Palette } from '../../state/types'
@@ -46,6 +46,28 @@ describe('generatePalette', () => {
     const rng = seededRng(3)
     expect(generatePalette(palette(['#000000', '#ffffff']), rng)).toHaveLength(2)
     expect(generatePalette(palette(Array(10).fill('#123456')), rng)).toHaveLength(10)
+  })
+})
+
+describe('candidateColors', () => {
+  it('returns n distinct valid colors near the final hue, never the final itself', () => {
+    const rng = seededRng(11)
+    const final = '#2a9d8f'
+    const out = candidateColors(final, 4, rng)
+    expect(out).toHaveLength(4)
+    expect(new Set(out).size).toBe(4)
+    const fh = hexToHsl(final).h
+    for (const hex of out) {
+      expect(isValidHex(hex)).toBe(true)
+      expect(hex).not.toBe(final)
+      const dh = Math.abs(((hexToHsl(hex).h - fh + 540) % 360) - 180)
+      expect(dh).toBeLessThanOrEqual(30)
+    }
+  })
+  it('handles grays and extremes without looping forever', () => {
+    expect(candidateColors('#000000', 4, seededRng(1)).length).toBeGreaterThan(0)
+    expect(candidateColors('#ffffff', 4, seededRng(2)).length).toBeGreaterThan(0)
+    expect(candidateColors('#808080', 4, seededRng(3)).length).toBeGreaterThan(0)
   })
 })
 
