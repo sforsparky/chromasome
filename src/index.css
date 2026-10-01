@@ -107,11 +107,6 @@ button:disabled {
   font-size: 18px;
 }
 
-.header__tagline {
-  color: var(--muted);
-  font-size: 14px;
-}
-
 .header__by {
   margin-left: auto;
   color: var(--muted);
@@ -854,10 +849,6 @@ button:disabled {
 @media (max-width: 700px) {
   :root {
     --toolbar-h: 112px;
-  }
-
-  .header__tagline {
-    display: none;
   }
 
   .board {
