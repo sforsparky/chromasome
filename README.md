@@ -33,17 +33,19 @@ npm run preview    # serve dist/
 
 ## Deploying
 
-The app is a static site. The only build-time setting is the base path, which must start and end with `/`:
+The app is a static site hosted on Netlify at **chromasome.inmydna.com**. `netlify.toml` holds the build settings (`npm run build`, publish `dist/`, Node 22); every push to `main` deploys automatically once the Netlify project is linked to this repo.
+
+The build also accepts a base path for hosting under a sub-directory. It must start and end with `/`:
 
 | Target | Command |
 |---|---|
 | Local dev | `npm run dev` (base `/`) |
-| inmydna.com/chromasome | `VITE_BASE_PATH=/chromasome/ npm run build`, then upload `dist/` to the site's `/chromasome/` directory |
-| GitHub Pages | automatic on push to `main` via `.github/workflows/deploy.yml` (base `/<repo-name>/`) |
+| Netlify (domain root) | `npm run build` |
+| A sub-directory such as `/chromasome/` | `VITE_BASE_PATH=/chromasome/ npm run build`, then upload `dist/` to that directory |
 
 Because the palette is in the URL hash, no server-side rewrite rules are needed on any host.
 
-For GitHub Pages, set **Settings → Pages → Source** to "GitHub Actions" once.
+`.github/workflows/ci.yml` runs lint, tests and a build on every push to `main` and on every pull request.
 
 ## Project layout
 

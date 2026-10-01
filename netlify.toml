@@ -1,0 +1,15 @@
+# Netlify build settings for Chromasome (chromasome.inmydna.com).
+# The site is served at the domain root, so no VITE_BASE_PATH is needed.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Long-lived caching for hashed assets; index.html stays fresh.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
