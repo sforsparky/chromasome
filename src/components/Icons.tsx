@@ -121,6 +121,14 @@ export const ImageIcon = (p: IconProps) => (
   </svg>
 )
 
+export const CoffeeIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9Z" />
+    <path d="M17 11h1.5a2.5 2.5 0 0 1 0 5H17" />
+    <path d="M8 3.5c0 1 1 1.5 1 2.5M12 3.5c0 1 1 1.5 1 2.5" />
+  </svg>
+)
+
 export const DnaIcon = (p: IconProps) => (
   <svg {...base(p)}>
     <path d="M7 3c0 6 10 6 10 12s-10 6-10 6M17 3c0 6-10 6-10 12s10 6 10 6" />
