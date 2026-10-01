@@ -570,6 +570,13 @@ button:disabled {
   background: rgb(0 0 0 / 0.2);
 }
 
+/* No keyboard to press space on: hide the hint where the primary input is a finger. */
+@media (pointer: coarse) {
+  .btn__hint {
+    display: none;
+  }
+}
+
 /* Dialogs ------------------------------------------------------------ */
 
 .dialog {
