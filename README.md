@@ -1,6 +1,6 @@
 # Chromasome
 
-**Color, in my DNA.** A color palette generator by [In My DNA](https://inmydna.com).
+A color palette generator by [In My DNA](https://inmydna.com), live at [chromasome.inmydna.com](https://chromasome.inmydna.com).
 
 Press space to mutate a new strand of colors, lock the ones you want to keep, adjust any color, and share the palette with a single URL. Export as CSS, SCSS, Tailwind, JSON or PNG, or extract a palette from any image. Everything runs in the browser; there is no backend.
 

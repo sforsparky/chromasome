@@ -1,7 +1,6 @@
 // All user-facing brand strings live here so the vocabulary stays consistent.
 export const copy = {
   appName: 'Chromasome',
-  tagline: 'Color, in my DNA.',
   brand: 'In My DNA',
   brandUrl: 'https://inmydna.com',
   brandHost: 'inmydna.com',

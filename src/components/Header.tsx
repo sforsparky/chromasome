@@ -8,7 +8,6 @@ export function Header() {
         <DnaIcon width={22} height={22} />
         <span className="header__name">{copy.appName}</span>
       </a>
-      <span className="header__tagline">{copy.tagline}</span>
       <a className="header__by" href={copy.brandUrl} rel="noreferrer">
         {copy.brandHost}
       </a>
