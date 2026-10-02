@@ -135,3 +135,36 @@ export const DnaIcon = (p: IconProps) => (
     <path d="M8.5 7h7M8.5 17h7M10 12h4" />
   </svg>
 )
+
+export const EyeIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+)
+
+export const ChecksIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="m4 6 1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17" />
+    <path d="M12 6h8M12 12h8M12 18h8" />
+  </svg>
+)
+
+export const CheckIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="m5 12 5 5 9-10" />
+  </svg>
+)
+
+export const AlertIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 7v6M12 17h0" />
+  </svg>
+)
+
+export const RatioIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M14 5v14M18.5 5v14" />
+  </svg>
+)

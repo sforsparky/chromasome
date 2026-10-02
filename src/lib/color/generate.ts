@@ -1,5 +1,7 @@
 import { hexToHsl, hslToHex, clamp } from './convert'
+import { lstar, lstarToOkL, maxChroma, oklchToHex } from './oklch'
 import { pickWeighted, rand, shuffle, type Rng } from './random'
+import { LOUD_C, measure } from './roles'
 import type { Palette, Swatch } from '../../state/types'
 
 export type Harmony = 'analogous' | 'complementary' | 'split' | 'triadic' | 'tetradic' | 'mono'
@@ -15,8 +17,22 @@ const HUE_OFFSETS: Record<Harmony, number[]> = {
 
 const L_MIN = 0.18
 const L_MAX = 0.88
-const L_MIN_GAP = 0.1
 const HUE_JITTER = 6
+
+/** Chance that a Mutate with no locked loud color comes out calm (no loud color, one clearly darker). */
+const CALM_P = 1 / 6
+/** Minimum L* distance between the loud color and the quiet colors around it. */
+const GAP = 27
+const LOUD_C_RANGE: Range = [0.16, 0.24]
+const LOUD_LSTAR: Range = [30, 86]
+const LOUD_START: Range = [50, 66]
+const HUE_ROTATE = 25
+const PICK_TRIES = 10
+const LIGHT_BG_P = 0.75
+
+type Range = [number, number]
+type Spec = { lstar: Range; chroma: Range }
+type Planned = { lstar: number; chroma: number; hue: number }
 
 function pickHarmony(n: number, rng: Rng): Harmony {
   const modes: Harmony[] = ['analogous', 'complementary', 'split', 'triadic', 'mono']
@@ -28,46 +44,139 @@ function pickHarmony(n: number, rng: Rng): Harmony {
   return pickWeighted(modes, weights, rng)
 }
 
-/** n lightness values spread across [L_MIN, L_MAX], shuffled so neighbors differ by >= L_MIN_GAP where possible. */
-function lightnessLadder(n: number, rng: Rng): number[] {
-  const step = n > 1 ? (L_MAX - L_MIN) / (n - 1) : 0
-  const base = Array.from({ length: n }, (_, i) => L_MIN + i * step)
-  let ladder = shuffle(base, rng)
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const ok = ladder.every((l, i) => i === 0 || Math.abs(l - ladder[i - 1]) >= L_MIN_GAP - 1e-9)
-    if (ok) break
-    ladder = shuffle(base, rng)
+const wrapHue = (h: number) => ((h % 360) + 360) % 360
+const minDistance = (l: number, placed: number[]) => Math.min(Infinity, ...placed.map((p) => Math.abs(l - p)))
+
+/** A random L* in range, keeping the best of a few tries away from colors already placed. */
+function pickLstar([lo, hi]: Range, placed: number[], rng: Rng): number {
+  let best = rand(lo, hi, rng)
+  for (let i = 1; i < PICK_TRIES; i++) {
+    const l = rand(lo, hi, rng)
+    if (minDistance(l, placed) > minDistance(best, placed)) best = l
   }
-  return ladder
+  return best
 }
 
+/** Build a hex at a target L*, nudging OKLCH lightness so the result lands on it. */
+function makeColor({ lstar: target, chroma, hue }: Planned): string {
+  let l = lstarToOkL(target)
+  let hex = oklchToHex({ l, c: chroma, h: hue })
+  for (let i = 0; i < 2; i++) {
+    l += (target - lstar(hex)) / 116
+    hex = oklchToHex({ l, c: chroma, h: hue })
+  }
+  return hex
+}
+
+/** Place the loud color: in a mid-light band, far from locked values, at a hue that can carry the chroma. */
+function planLoud(startHue: number, placed: number[], rng: Rng): Planned {
+  const start = rand(LOUD_START[0], LOUD_START[1], rng)
+  let hue = startHue
+  let lstarPick = -1
+  for (let turn = 0; turn < 5 && lstarPick < 0; turn++) {
+    if (turn > 0) hue = wrapHue(hue + HUE_ROTATE)
+    let bestDist = Infinity
+    for (let l = LOUD_LSTAR[0]; l <= LOUD_LSTAR[1]; l += 2) {
+      if (maxChroma(lstarToOkL(l), hue) < LOUD_C_RANGE[0] || minDistance(l, placed) < GAP) continue
+      if (Math.abs(l - start) < bestDist) {
+        bestDist = Math.abs(l - start)
+        lstarPick = l
+      }
+    }
+  }
+  if (lstarPick < 0) {
+    hue = startHue
+    lstarPick = LOUD_LSTAR[0]
+    for (let l = LOUD_LSTAR[0]; l <= LOUD_LSTAR[1]; l += 2) {
+      if (minDistance(l, placed) > minDistance(lstarPick, placed)) lstarPick = l
+    }
+  }
+  const cap = Math.min(LOUD_C_RANGE[1], maxChroma(lstarToOkL(lstarPick), hue))
+  return { lstar: lstarPick, chroma: rand(Math.min(LOUD_C_RANGE[0], cap), cap, rng), hue }
+}
+
+const span = (lo: number, hi: number): Range => [lo, Math.max(lo, hi)]
+
+/** Background and second around a loud color at L* `loud`: one far above it, one far below where there is room. */
+function quietSpecs(loud: number, lockedQuiet: number[], rng: Rng): Spec[] {
+  const canAbove = loud + GAP <= 97
+  const canBelow = loud - GAP >= 14
+  const lockedAbove = lockedQuiet.some((l) => l > loud)
+  const lockedBelow = lockedQuiet.some((l) => l < loud)
+  let bgLight = canAbove
+  if (canAbove && canBelow) bgLight = lockedAbove !== lockedBelow ? lockedBelow : rng() < LIGHT_BG_P
+
+  if (!canAbove) return [{ lstar: [6, 14], chroma: [0.01, 0.04] }, { lstar: span(10 + GAP, loud - GAP), chroma: [0.02, 0.06] }]
+  if (!canBelow) return [{ lstar: [90, 97], chroma: [0.005, 0.03] }, { lstar: span(loud + GAP, 90 - GAP), chroma: [0.02, 0.06] }]
+  const lightBg: Spec = { lstar: span(Math.max(90, loud + GAP), 97), chroma: [0.005, 0.03] }
+  const darkSecond: Spec = { lstar: span(14, Math.min(30, loud - GAP)), chroma: [0.03, 0.065] }
+  const darkBg: Spec = { lstar: [6, 14], chroma: [0.01, 0.04] }
+  const lightSecond: Spec = { lstar: span(Math.max(78, loud + GAP), 92), chroma: [0.015, 0.045] }
+  return bgLight ? [lightBg, darkSecond] : [darkBg, lightSecond]
+}
+
+const CALM_SPECS: Spec[] = [
+  { lstar: [18, 30], chroma: [0.03, 0.06] }, // accent: clearly darker
+  { lstar: [88, 96], chroma: [0.01, 0.035] }, // background
+  { lstar: [70, 84], chroma: [0.02, 0.05] }, // second
+]
+
 /**
- * Produce a new palette where every unlocked swatch is regenerated using a
- * random color-harmony rule. Locked swatches keep their hex; ids are preserved.
+ * Produce a new palette where every unlocked swatch is regenerated: one loud color, the rest quiet and
+ * spread across dark, middle and light (or, now and then, a calm palette). Hues follow a random
+ * harmony rule. Locked swatches keep their hex and steer the rest; ids are preserved.
  */
 export function generatePalette(current: Palette, rng: Rng = Math.random): Palette {
   const n = current.length
   const harmony = pickHarmony(n, rng)
   const offsets = HUE_OFFSETS[harmony]
+  const free = current.filter((s) => !s.locked).length
+  const calmRoll = rng()
+  if (free === 0) return current
 
-  const firstLocked = current.find((s) => s.locked)
-  const baseHue = firstLocked ? hexToHsl(firstLocked.hex).h : rand(0, 360, rng)
+  const locked = current.filter((s) => s.locked).map((s) => measure(s.hex))
+  const lockedLoud = locked.find((m) => m.chroma >= LOUD_C)
+  const lockedQuiet = locked.filter((m) => m !== lockedLoud).map((m) => m.lstar)
+  const tinted = locked.find((m) => m.chroma >= 0.03)
+  const anchor = lockedLoud ?? tinted
+  const baseHue = anchor ? anchor.hue : rand(0, 360, rng)
+  const calm = !lockedLoud && calmRoll < CALM_P
 
-  const ladder = lightnessLadder(n, rng)
-  const monoSat = rand(0.25, 0.55, rng)
+  let slot = anchor && !lockedLoud ? 1 : 0
+  const nextHue = () => wrapHue(baseHue + offsets[slot++ % offsets.length] + rand(-HUE_JITTER, HUE_JITTER, rng))
+  const placed = locked.map((m) => m.lstar)
+  const planned: Planned[] = []
+  const add = (spec: Spec) => {
+    const l = pickLstar(spec.lstar, placed, rng)
+    placed.push(l)
+    planned.push({ lstar: l, chroma: rand(spec.chroma[0], spec.chroma[1], rng), hue: nextHue() })
+  }
+  // A locked quiet color already covering a spec's band stands in for it.
+  const covered = (spec: Spec) => lockedQuiet.some((l) => l >= spec.lstar[0] - 10 && l <= spec.lstar[1] + 10)
 
-  return current.map((swatch, i): Swatch => {
-    if (swatch.locked) return swatch
-    const h = (((baseHue + offsets[i % offsets.length] + rand(-HUE_JITTER, HUE_JITTER, rng)) % 360) + 360) % 360
-    const l = ladder[i]
-    let s: number
-    if (harmony === 'mono') {
-      s = clamp(monoSat + rand(-0.05, 0.05, rng), 0, 1)
-    } else {
-      s = rand(0.45, 0.85, rng) * (1 - 0.6 * Math.abs(l - 0.5))
+  if (calm) {
+    CALM_SPECS.filter((spec) => !covered(spec)).forEach(add)
+  } else {
+    let loudL = lockedLoud?.lstar
+    if (loudL === undefined) {
+      const loud = planLoud(nextHue(), placed, rng)
+      planned.push(loud)
+      placed.push(loud.lstar)
+      loudL = loud.lstar
     }
-    return { ...swatch, hex: hslToHex({ h, s, l }) }
-  })
+    quietSpecs(loudL, lockedQuiet, rng).filter((spec) => !covered(spec)).forEach(add)
+  }
+
+  // Extras stay quiet and sit inside the range already used, so the background stays the most extreme.
+  while (planned.length < free) {
+    const lo = Math.min(...placed)
+    const hi = Math.max(...placed)
+    add({ lstar: hi - lo > 8 ? [lo + 4, hi - 4] : [20, 85], chroma: [0.01, 0.06] })
+  }
+
+  const hexes = shuffle(planned.slice(0, free).map(makeColor), rng)
+  let next = 0
+  return current.map((swatch): Swatch => (swatch.locked ? swatch : { ...swatch, hex: hexes[next++] }))
 }
 
 /** A color roughly between two neighbors in HSL space, used when inserting a column. */

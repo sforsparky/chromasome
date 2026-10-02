@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { copy } from '../copy'
 import { canCopyImages, copyBlob, copyText, downloadBlob, downloadText } from '../lib/export/clipboard'
 import { exportAs, exportFilename, FORMAT_EXTENSIONS, FORMAT_LABELS, type ExportFormat } from '../lib/export/formats'
-import { renderPalettePng } from '../lib/export/png'
+import { renderPalettePng, type PngLayout } from '../lib/export/png'
 import { usePalette } from '../state/PaletteProvider'
 import { CloseIcon } from './Icons'
 import { useToast } from './Toast'
@@ -19,6 +19,7 @@ export function ExportDialog({ open, onClose }: Props) {
   const toast = useToast()
   const [tab, setTab] = useState<Tab>('css')
   const [png, setPng] = useState<{ blob: Blob; url: string } | null>(null)
+  const [pngLayout, setPngLayout] = useState<PngLayout>('equal')
 
   useEffect(() => {
     const d = ref.current
@@ -31,7 +32,7 @@ export function ExportDialog({ open, onClose }: Props) {
   useEffect(() => {
     if (!open || tab !== 'png') return
     let cancelled = false
-    renderPalettePng(palette).then((blob) => {
+    renderPalettePng(palette, pngLayout).then((blob) => {
       if (cancelled) return
       setPng({ blob, url: URL.createObjectURL(blob) })
     })
@@ -42,7 +43,7 @@ export function ExportDialog({ open, onClose }: Props) {
         return null
       })
     }
-  }, [open, tab, palette])
+  }, [open, tab, palette, pngLayout])
 
   const url = typeof window !== 'undefined' ? window.location.href : undefined
   const text = useMemo(() => (tab === 'png' ? '' : exportAs(tab, palette, url)), [tab, palette, url])
@@ -60,7 +61,7 @@ export function ExportDialog({ open, onClose }: Props) {
   const onDownload = () => {
     if (tab === 'png') {
       if (!png) return
-      downloadBlob(png.blob, exportFilename(palette, 'png'))
+      downloadBlob(png.blob, exportFilename(palette, pngLayout === 'roles' ? 'roles.png' : 'png'))
     } else {
       downloadText(text, exportFilename(palette, FORMAT_EXTENSIONS[tab]), MIME[tab])
     }
@@ -86,11 +87,16 @@ export function ExportDialog({ open, onClose }: Props) {
 
       <div className="dialog__body">
         {tab === 'png' ? (
-          png ? (
-            <img className="export__preview" src={png.url} alt="Palette preview" />
-          ) : (
-            <div className="export__loading">Rendering…</div>
-          )
+          <>
+            <div className="segmented" role="group" aria-label={copy.pngLayout}>
+              {(['equal', 'roles'] as const).map((l) => (
+                <button key={l} type="button" className="segmented__btn" aria-pressed={pngLayout === l} onClick={() => setPngLayout(l)}>
+                  {l === 'equal' ? copy.pngEqual : copy.pngRoles}
+                </button>
+              ))}
+            </div>
+            {png ? <img className="export__preview" src={png.url} alt="Palette preview" /> : <div className="export__loading">Rendering…</div>}
+          </>
         ) : (
           <pre className="export__code">
             <code>{text}</code>
