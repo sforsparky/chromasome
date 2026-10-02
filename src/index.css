@@ -193,6 +193,8 @@ button:disabled {
   justify-content: flex-end;
   align-items: center;
   min-width: 0;
+  /* Lets the hex size itself to the column (cqi), so narrow columns never wrap it. */
+  container-type: inline-size;
   /* Mutate: one short crossfade to the new color, never a flicker. */
   transition:
     background-color var(--t-color) ease,
@@ -207,6 +209,13 @@ button:disabled {
   min-width: 56px;
 }
 
+.board--proportional .column__name {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Role badge: always in the DOM, fades in with the checks panel or the role-sized board. */
 .column__role {
   position: absolute;
@@ -214,7 +223,7 @@ button:disabled {
   left: 50%;
   transform: translateX(-50%);
   max-width: calc(100% - 12px);
-  padding: 3px 8px;
+  padding: 3px min(8px, 3cqi);
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
   font-size: 11px;
@@ -391,9 +400,10 @@ button:disabled {
   background: transparent;
   font-family: var(--mono);
   font-weight: 700;
-  font-size: clamp(16px, 2.2vw, 28px);
+  font-size: min(clamp(16px, 2.2vw, 28px), 19cqi);
   letter-spacing: 0.04em;
-  padding: 6px 10px;
+  padding: 6px min(10px, 3cqi);
+  white-space: nowrap;
   border-radius: 8px;
   transition:
     transform var(--t-press) var(--ease-out),
