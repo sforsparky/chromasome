@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import { copy } from '../copy'
 import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
@@ -11,9 +12,10 @@ type Props = {
   onSquint: (on: boolean) => void
   checksOpen: boolean
   onChecks: (open: boolean) => void
+  checksButtonRef: RefObject<HTMLButtonElement | null>
 }
 
-export function Toolbar({ onExport, onExtract, squint, onSquint, checksOpen, onChecks }: Props) {
+export function Toolbar({ onExport, onExtract, squint, onSquint, checksOpen, onChecks, checksButtonRef }: Props) {
   const { dispatch, canUndo, canRedo } = usePalette()
   const toast = useToast()
 
@@ -43,6 +45,7 @@ export function Toolbar({ onExport, onExtract, squint, onSquint, checksOpen, onC
           <EyeIcon />
         </button>
         <button
+          ref={checksButtonRef}
           type="button"
           className="btn btn--icon btn--toggle"
           onClick={() => onChecks(!checksOpen)}

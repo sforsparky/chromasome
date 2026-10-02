@@ -27,6 +27,11 @@ describe('evaluatePalette', () => {
     expect(space.verdict).toContain('#8a8a8a')
   })
 
+  it('quotes the loud color\'s real share', () => {
+    expect(evaluatePalette(['#f3613c', '#13403b', '#f4eee2']).checks[2].verdict).toContain('about 10%')
+    expect(evaluatePalette(['#f3613c', '#f4eee2']).checks[2].verdict).toContain('about 25%')
+  })
+
   it('judges two-color palettes by their gap', () => {
     expect(statuses(['#f3613c', '#f4eee2'])[1]).toBe('pass')
     expect(statuses(['#777777', '#888888'])[1]).toBe('fail')

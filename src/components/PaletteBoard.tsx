@@ -89,9 +89,7 @@ export function PaletteBoard({ adjustingId, onAdjust, report, squint, proportion
     return () => window.removeEventListener('keydown', onKey)
   }, [dragFrom, endDrag])
 
-  const cls = ['board', intro && 'board--intro', dragFrom !== null && 'board--dragging', proportional && 'board--proportional', showRoles && 'board--roles']
-    .filter(Boolean)
-    .join(' ')
+  const cls = ['board', intro && 'board--intro', dragFrom !== null && 'board--dragging', proportional && 'board--proportional'].filter(Boolean).join(' ')
 
   return (
     <main className={cls} role="list" aria-label="Palette" ref={boardRef}>

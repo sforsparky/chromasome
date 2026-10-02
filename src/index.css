@@ -664,14 +664,7 @@ button:disabled {
 
 /* No keyboard to press space on: hide the hint where the primary input is a finger. */
 @media (pointer: coarse) {
-  .btn--toggle[aria-pressed='true'],
-.btn--toggle[aria-expanded='true'] {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
-}
-
-.btn__hint {
+  .btn__hint {
     display: none;
   }
 }

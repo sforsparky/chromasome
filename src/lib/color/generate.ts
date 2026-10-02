@@ -101,16 +101,16 @@ const span = (lo: number, hi: number): Range => [lo, Math.max(lo, hi)]
 function quietSpecs(loud: number, lockedQuiet: number[], rng: Rng): Spec[] {
   const canAbove = loud + GAP <= 97
   const canBelow = loud - GAP >= 14
+  const lightBg: Spec = { lstar: span(Math.max(90, loud + GAP), 97), chroma: [0.005, 0.03] }
+  const darkBg: Spec = { lstar: [6, 14], chroma: [0.01, 0.04] }
+  // Only one side has room: both quiet colors go there, the second between background and loud.
+  if (!canAbove) return [darkBg, { lstar: span(10 + GAP, loud - GAP), chroma: [0.02, 0.06] }]
+  if (!canBelow) return [lightBg, { lstar: span(loud + GAP, 90 - GAP), chroma: [0.02, 0.06] }]
+
   const lockedAbove = lockedQuiet.some((l) => l > loud)
   const lockedBelow = lockedQuiet.some((l) => l < loud)
-  let bgLight = canAbove
-  if (canAbove && canBelow) bgLight = lockedAbove !== lockedBelow ? lockedBelow : rng() < LIGHT_BG_P
-
-  if (!canAbove) return [{ lstar: [6, 14], chroma: [0.01, 0.04] }, { lstar: span(10 + GAP, loud - GAP), chroma: [0.02, 0.06] }]
-  if (!canBelow) return [{ lstar: [90, 97], chroma: [0.005, 0.03] }, { lstar: span(loud + GAP, 90 - GAP), chroma: [0.02, 0.06] }]
-  const lightBg: Spec = { lstar: span(Math.max(90, loud + GAP), 97), chroma: [0.005, 0.03] }
+  const bgLight = lockedAbove !== lockedBelow ? lockedBelow : rng() < LIGHT_BG_P
   const darkSecond: Spec = { lstar: span(14, Math.min(30, loud - GAP)), chroma: [0.03, 0.065] }
-  const darkBg: Spec = { lstar: [6, 14], chroma: [0.01, 0.04] }
   const lightSecond: Spec = { lstar: span(Math.max(78, loud + GAP), 92), chroma: [0.015, 0.045] }
   return bgLight ? [lightBg, darkSecond] : [darkBg, lightSecond]
 }

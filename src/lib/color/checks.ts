@@ -7,12 +7,12 @@ export type CheckResult = { id: CheckId; status: CheckStatus; verdict: string }
 export type PaletteReport = Roles & { checks: CheckResult[]; passed: number }
 
 /** L* distance that keeps two values apart when squinting. */
-export const VALUE_GAP = 25
+const VALUE_GAP = 25
 /** L* distance that lets one color anchor a pair that sits close. */
-export const FAR_GAP = 40
+const FAR_GAP = 40
 const CLOSE_MIN = 5
 /** L* distance between loud and background for the loud color to pop. */
-export const POP_GAP = 20
+const POP_GAP = 20
 
 function checkEmphasis(hexes: string[], r: Roles): CheckResult {
   const loud = hexes.filter((_, i) => r.roles[i].chroma >= LOUD_C)
@@ -52,14 +52,15 @@ function checkSpace(hexes: string[], r: Roles): CheckResult {
   const bg = r.roles[r.background]
   const loud = r.roles[r.loud]
   const gap = Math.abs(loud.lstar - bg.lstar)
+  const share = Math.round(loud.weight * 100)
   if (r.calm) {
     return gap >= FAR_GAP
-      ? { id: 'space', status: 'pass', verdict: v.accentApart(hexes[r.loud]) }
+      ? { id: 'space', status: 'pass', verdict: v.accentApart(hexes[r.loud], share) }
       : { id: 'space', status: 'fail', verdict: v.accentBlends(hexes[r.loud], hexes[r.background]) }
   }
   if (bg.chroma > QUIET_C) return { id: 'space', status: 'fail', verdict: v.busyBackground(hexes[r.background]) }
   if (gap < POP_GAP) return { id: 'space', status: 'fail', verdict: v.noPop(hexes[r.loud], hexes[r.background]) }
-  return { id: 'space', status: 'pass', verdict: v.pops(hexes[r.loud]) }
+  return { id: 'space', status: 'pass', verdict: v.pops(hexes[r.loud], share) }
 }
 
 /** Roles plus the three lesson checks, from the hexes alone. */

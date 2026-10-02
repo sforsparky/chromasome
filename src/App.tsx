@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { ChecksPanel } from './components/ChecksPanel'
 import { ExportDialog } from './components/ExportDialog'
 import { ExtractDialog } from './components/ExtractDialog'
@@ -20,13 +20,21 @@ function Shell() {
   const [checksOpen, setChecksOpen] = useState(false)
   const [squint, setSquint] = useState(false)
   const [proportional, setProportional] = useState(false)
+  const checksButton = useRef<HTMLButtonElement>(null)
+
+  // Closing the panel removes the focused element, so hand focus back to the button that opened it.
+  const closeChecks = useCallback(() => {
+    const hadFocus = document.activeElement?.closest('#checks-panel') != null
+    setChecksOpen(false)
+    if (hadFocus) checksButton.current?.focus()
+  }, [])
 
   const hexes = useMemo(() => palette.map((s) => s.hex), [palette])
   const report = useMemo(() => evaluatePalette(hexes), [hexes])
 
   useUrlSync()
   // Escape closes the innermost thing first: the adjust panel, then the checks panel.
-  useKeyboard(useCallback(() => (adjustingId ? setAdjustingId(null) : setChecksOpen(false)), [adjustingId]))
+  useKeyboard(useCallback(() => (adjustingId ? setAdjustingId(null) : closeChecks()), [adjustingId, closeChecks]))
 
   return (
     <div className={`app${checksOpen ? ' app--checks' : ''}`}>
@@ -46,9 +54,10 @@ function Shell() {
         onSquint={setSquint}
         checksOpen={checksOpen}
         onChecks={setChecksOpen}
+        checksButtonRef={checksButton}
       />
       {checksOpen && (
-        <ChecksPanel report={report} hexes={hexes} proportional={proportional} onProportional={setProportional} onClose={() => setChecksOpen(false)} />
+        <ChecksPanel report={report} hexes={hexes} proportional={proportional} onProportional={setProportional} onClose={closeChecks} />
       )}
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} />
       <ExtractDialog open={extractOpen} onClose={() => setExtractOpen(false)} />
