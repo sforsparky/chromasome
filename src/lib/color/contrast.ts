@@ -1,15 +1,11 @@
-import { hexToRgb, type Rgb } from './convert'
+import { hexToRgb, srgbToLinear, type Rgb } from './convert'
 
 export const TEXT_LIGHT = '#ffffff'
 export const TEXT_DARK = '#111111'
 
 /** WCAG 2.x relative luminance (0 = black, 1 = white). */
 export function relativeLuminance({ r, g, b }: Rgb): number {
-  const lin = (c: number) => {
-    const s = c / 255
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
-  }
-  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+  return 0.2126 * srgbToLinear(r / 255) + 0.7152 * srgbToLinear(g / 255) + 0.0722 * srgbToLinear(b / 255)
 }
 
 /** WCAG contrast ratio between two hex colors, 1–21. */

@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
+import type { PaletteReport } from '../lib/color/checks'
 import { usePalette } from '../state/PaletteProvider'
 import { useStacked } from '../state/useStacked'
 import { ColorColumn, type DragHandlers } from './ColorColumn'
@@ -7,9 +8,15 @@ import { ColumnInserter } from './ColumnInserter'
 type Props = {
   adjustingId: string | null
   onAdjust: (id: string | null) => void
+  report: PaletteReport
+  /** Show every column as its greyscale value (the squint test). */
+  squint: boolean
+  /** Size columns by their 60/30/10 share instead of equally. */
+  proportional: boolean
+  showRoles: boolean
 }
 
-export function PaletteBoard({ adjustingId, onAdjust }: Props) {
+export function PaletteBoard({ adjustingId, onAdjust, report, squint, proportional, showRoles }: Props) {
   const { palette, dispatch } = usePalette()
   const stacked = useStacked()
   const boardRef = useRef<HTMLElement>(null)
@@ -82,7 +89,7 @@ export function PaletteBoard({ adjustingId, onAdjust }: Props) {
     return () => window.removeEventListener('keydown', onKey)
   }, [dragFrom, endDrag])
 
-  const cls = ['board', intro && 'board--intro', dragFrom !== null && 'board--dragging'].filter(Boolean).join(' ')
+  const cls = ['board', intro && 'board--intro', dragFrom !== null && 'board--dragging', proportional && 'board--proportional'].filter(Boolean).join(' ')
 
   return (
     <main className={cls} role="list" aria-label="Palette" ref={boardRef}>
@@ -98,6 +105,10 @@ export function PaletteBoard({ adjustingId, onAdjust }: Props) {
             drag={drag}
             dragging={dragFrom === i}
             dropTarget={dragOver === i && dragFrom !== null && dragFrom !== i}
+            role={report.roles[i].role}
+            share={proportional ? report.roles[i].weight * palette.length : undefined}
+            squint={squint}
+            showRole={showRoles}
           />
         </Fragment>
       ))}

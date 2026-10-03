@@ -6,14 +6,16 @@ Press space to mutate a new strand of colors, lock the ones you want to keep, ad
 
 ## Features
 
-- **Mutate** (space bar) generates a palette using a random color-harmony rule (analogous, complementary, split-complementary, triadic, tetradic, monochrome) with lightness spread so neighbours stay distinct.
-- **Lock** a color and it survives every mutation. Mutations build around the hue of the first locked color.
+- **Mutate** (space bar) generates a palette using a random color-harmony rule (analogous, complementary, split-complementary, triadic, tetradic, monochrome). Each strand has one loud color and keeps the rest quiet, spread across dark, middle and light (measured perceptually in OKLCH and CIE L\*). About one mutation in six comes out calm: no loud color, one clearly darker.
+- **Lock** a color and it survives every mutation. Mutations take their hue from a locked color (greys have none to give); a locked loud color stays the only loud one, and new colors keep their distance from a locked color's lightness.
 - **Adjust** any color with hex input, a native color picker, or hue/saturation/lightness sliders.
 - **Add, remove and reorder** columns (2 to 10) with the + buttons, arrows, or drag and drop.
 - **Undo / redo** with Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z.
 - **Color code**: the palette lives in the URL hash, so the link *is* the palette:
   `https://inmydna.com/chromasome/#/264653-2a9d8f-e9c46a-f4a261-e76f51`
-- **Export** as CSS custom properties, SCSS variables, a Tailwind config snippet, JSON, or a 1600×900 PNG.
+- **Checks** opens a live panel that scores the strand against three rules: one loud, the rest quiet; dark, middle and light; the loud color takes the least space. It shows a 60/30/10 preview and a small mock page, and can size the board by role. The checks are adapted from Alena Song's [free color lesson](https://asongstudio.com/courses/free-color-lesson).
+- **Squint** shows every color as its greyscale value, the quick test for whether dark, middle and light hold up.
+- **Export** as CSS custom properties, SCSS variables, a Tailwind config snippet, JSON, or a 1600×900 PNG (equal columns or 60·30·10). CSS, SCSS and Tailwind add role aliases after the numbered colors (`--color-bg`, `$color-bg`, `strand-bg`, plus `second` and `accent`); JSON gives each color its `role` and `share`.
 - **Extract DNA**: drop in an image and get its five dominant colors (median-cut quantization on a downscaled canvas, all client-side).
 
 ## Development
@@ -52,10 +54,10 @@ Because the palette is in the URL hash, no server-side rewrite rules are needed 
 ```
 src/
   copy.ts            brand vocabulary (Mutate, strand, Extract DNA, Color code…)
-  lib/color/         hex/rgb/hsl conversion, WCAG contrast, color names, palette generation
+  lib/color/         hex/rgb/hsl and OKLCH conversion, WCAG contrast, color names, roles and checks, palette generation
   lib/extract/       median-cut quantization and image → palette
   lib/export/        CSS/SCSS/Tailwind/JSON strings, PNG rendering, clipboard helpers
   lib/url/           palette ⇄ URL hash codec
   state/             reducer with undo/redo, provider, URL sync, keyboard shortcuts
-  components/        header, palette board, color column, adjust panel, dialogs, toolbar
+  components/        header, palette board, color column, adjust panel, checks panel, dialogs, toolbar
 ```

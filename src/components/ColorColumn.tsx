@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties, type Poin
 import { copy } from '../copy'
 import { textColorFor } from '../lib/color/contrast'
 import { nearestName } from '../lib/color/names'
+import { greyOf } from '../lib/color/oklch'
+import type { Role } from '../lib/color/roles'
 import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
 import { MIN_COLORS, type Swatch } from '../state/types'
@@ -25,6 +27,11 @@ type Props = {
   drag: DragHandlers
   dragging: boolean
   dropTarget: boolean
+  role: Role
+  /** flex-grow when the board is sized by role; undefined keeps equal columns. */
+  share?: number
+  squint: boolean
+  showRole: boolean
 }
 
 const SWAP_MS = 200 // matches .column__hex-label transition
@@ -61,9 +68,11 @@ function useCopiedLabel(): { copied: boolean; swapping: boolean; flash: () => vo
   return { copied, swapping, flash }
 }
 
-export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag, dragging, dropTarget }: Props) {
+export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag, dragging, dropTarget, role, share, squint, showRole }: Props) {
   const { palette, dispatch } = usePalette()
-  const text = textColorFor(swatch.hex)
+  const shown = squint ? greyOf(swatch.hex) : swatch.hex
+  const text = textColorFor(shown)
+  const roleLabel = copy.roleLabels[role]
   const name = nearestName(swatch.hex)
   const n = palette.length
   const { copied, swapping, flash } = useCopiedLabel()
@@ -82,10 +91,14 @@ export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag,
   return (
     <div
       className={cls}
-      style={{ backgroundColor: swatch.hex, color: text, '--i': index } as CSSProperties}
+      style={{ backgroundColor: shown, color: text, flexGrow: share, '--i': index } as CSSProperties}
       role="listitem"
-      aria-label={`${swatch.hex} ${name}${swatch.locked ? ', locked' : ''}`}
+      aria-label={`${swatch.hex} ${name}${showRole ? `, ${roleLabel}` : ''}${swatch.locked ? ', locked' : ''}`}
     >
+      {/* Always mounted so a Mutate only swaps its text; visibility follows showRole. */}
+      <span className={`column__role${showRole ? ' is-on' : ''}`} aria-hidden="true">
+        {roleLabel}
+      </span>
       <div className="column__controls">
         <button
           type="button"
