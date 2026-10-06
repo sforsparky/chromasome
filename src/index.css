@@ -684,6 +684,8 @@ button:disabled {
 .dialog {
   width: min(680px, calc(100vw - 32px));
   max-height: calc(100vh - 48px);
+  /* dvh: the visible height on iOS, between Safari's toolbars. */
+  max-height: calc(100dvh - 48px);
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -751,7 +753,8 @@ button:disabled {
   padding: 0 20px;
   overflow: auto;
   min-height: 0;
-  flex: 1;
+  /* Start from the content's height and shrink to scroll. A 0 basis (flex: 1) collapses to nothing in Safari. */
+  flex: 1 1 auto;
 }
 
 .dialog__foot {
