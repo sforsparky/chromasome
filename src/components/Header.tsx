@@ -1,11 +1,11 @@
 import { copy } from '../copy'
-import { CoffeeIcon, DnaIcon } from './Icons'
+import { BrandMark, CoffeeIcon } from './Icons'
 
 export function Header() {
   return (
     <header className="header">
       <a className="header__brand" href={copy.brandUrl} rel="noreferrer">
-        <DnaIcon width={22} height={22} />
+        <BrandMark width={22} height={22} />
         <span className="header__name">{copy.appName}</span>
       </a>
       <a className="header__coffee" href={copy.coffeeUrl} target="_blank" rel="noopener noreferrer" aria-label={copy.coffee} title={copy.coffee}>

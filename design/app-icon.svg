@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <!-- Browser-tab icon: the app icon with rounded corners. Source: design/app-icon.svg -->
+  <!-- Chromasome app icon: square, full bleed (iOS and Android round the corners themselves). -->
   <defs>
     <linearGradient id="warm" gradientUnits="userSpaceOnUse" x1="0" y1="3" x2="0" y2="21">
       <stop offset="0" stop-color="#ff4d6d"/><stop offset=".5" stop-color="#ff9f1c"/><stop offset="1" stop-color="#ffd23f"/>
@@ -8,7 +8,7 @@
       <stop offset="0" stop-color="#3ddc84"/><stop offset=".5" stop-color="#2ec4ff"/><stop offset="1" stop-color="#8a5cff"/>
     </linearGradient>
   </defs>
-  <rect width="24" height="24" rx="5" fill="#0f0f10"/>
+  <rect width="24" height="24" fill="#0f0f10"/>
   <g transform="translate(12 12) scale(0.66) translate(-12 -12)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <!-- Order matters: warm strand, then the rungs, then the cool strand passing over them. -->
     <path d="M7 3c0 6 10 6 10 12s-10 6-10 6" stroke="url(#warm)"/>

@@ -17,6 +17,7 @@ Press space to mutate a new strand of colors, lock the ones you want to keep, ad
 - **Size board by role** resizes the columns to their 60/30/10 shares and labels each color's role.
 - **Squint** shows every color as its greyscale value, the quick test for whether dark, middle and light hold up.
 - **Export** as CSS custom properties, SCSS variables, a Tailwind config snippet, JSON, or a 1600×900 PNG (equal columns or 60·30·10). CSS, SCSS and Tailwind add role aliases after the numbered colors (`--color-bg`, `$color-bg`, `strand-bg`, plus `second` and `accent`); JSON gives each color its `role` and `share`.
+- **Add to Home Screen** on iPhone or Android to run it full screen as a web app, with its own icon. The layout keeps clear of the notch, status bar and home indicator.
 - **Extract from photo**: drop in an image and get its five dominant colors (median-cut quantization on a downscaled canvas, all client-side).
 
 ## Development

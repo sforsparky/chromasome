@@ -129,13 +129,6 @@ export const CoffeeIcon = (p: IconProps) => (
   </svg>
 )
 
-export const DnaIcon = (p: IconProps) => (
-  <svg {...base(p)}>
-    <path d="M7 3c0 6 10 6 10 12s-10 6-10 6M17 3c0 6-10 6-10 12s10 6 10 6" />
-    <path d="M8.5 7h7M8.5 17h7M10 12h4" />
-  </svg>
-)
-
 export const EyeIcon = (p: IconProps) => (
   <svg {...base(p)}>
     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
@@ -174,5 +167,26 @@ export const MoreIcon = (p: IconProps) => (
     <circle cx="12" cy="5" r="1.2" fill="currentColor" />
     <circle cx="12" cy="12" r="1.2" fill="currentColor" />
     <circle cx="12" cy="19" r="1.2" fill="currentColor" />
+  </svg>
+)
+
+/** The Chromasome mark in brand colors: warm strand, white rungs, cool strand over them (matches the app icon). */
+export const BrandMark = (p: IconProps) => (
+  <svg {...base(p)} stroke="none">
+    <defs>
+      <linearGradient id="brand-warm" gradientUnits="userSpaceOnUse" x1="0" y1="3" x2="0" y2="21">
+        <stop offset="0" stopColor="#ff4d6d" />
+        <stop offset=".5" stopColor="#ff9f1c" />
+        <stop offset="1" stopColor="#ffd23f" />
+      </linearGradient>
+      <linearGradient id="brand-cool" gradientUnits="userSpaceOnUse" x1="0" y1="3" x2="0" y2="21">
+        <stop offset="0" stopColor="#3ddc84" />
+        <stop offset=".5" stopColor="#2ec4ff" />
+        <stop offset="1" stopColor="#8a5cff" />
+      </linearGradient>
+    </defs>
+    <path d="M7 3c0 6 10 6 10 12s-10 6-10 6" stroke="url(#brand-warm)" />
+    <path d="M8.5 7H14.96M8.5 17h7M8.07 12H14" stroke="#ffffff" />
+    <path d="M17 3c0 6-10 6-10 12s10 6 10 6" stroke="url(#brand-cool)" />
   </svg>
 )
