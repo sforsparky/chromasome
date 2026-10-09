@@ -8,12 +8,15 @@ type Props = {
   report: PaletteReport
   hexes: string[]
   onClose: () => void
+  /** Phones: "Don't show again" stops the sheet opening when the board is sized by role. */
+  quiet: boolean
+  onQuiet: (quiet: boolean) => void
 }
 
 const STATUS_ICON: Record<CheckStatus, typeof CheckIcon> = { pass: CheckIcon, warn: AlertIcon, fail: CloseIcon }
 
 /** Pop-over above the "Size board by role" button. Non-modal: Space keeps mutating while it is open, and the checks follow along. */
-export function ChecksPanel({ report, hexes, onClose }: Props) {
+export function ChecksPanel({ report, hexes, onClose, quiet, onQuiet }: Props) {
   // A tap anywhere else closes it; taps on the size button are handled there.
   useEffect(() => {
     const onPointer = (e: PointerEvent) => {
@@ -38,6 +41,11 @@ export function ChecksPanel({ report, hexes, onClose }: Props) {
       <p className="checks__summary" aria-live="polite">
         {copy.checksSummary(report.passed, report.checks.length)}
       </p>
+
+      <label className="checks__quiet">
+        <input type="checkbox" checked={quiet} onChange={(e) => onQuiet(e.target.checked)} />
+        {copy.dontShowAgain}
+      </label>
 
       <ul className="checks__list">
         {report.checks.map((c) => {

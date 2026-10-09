@@ -43,6 +43,7 @@ export const copy = {
   checksSummary: (passed: number, total: number) => `${passed} of ${total} checks pass`,
   squint: 'Squint',
   proportional: 'Size board by role',
+  dontShowAgain: 'Don’t show again',
   closeChecks: 'Close checks',
   checkStatus: { pass: 'Pass', warn: 'Almost', fail: 'Fail' },
   pngLayout: 'PNG layout',

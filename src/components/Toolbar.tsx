@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 import { copy } from '../copy'
 import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
-import { DownloadIcon, EyeIcon, ImageIcon, LinkIcon, MoreIcon, RatioIcon, RedoIcon, UndoIcon } from './Icons'
+import { ChecksIcon, DownloadIcon, EyeIcon, ImageIcon, LinkIcon, MoreIcon, RatioIcon, RedoIcon, UndoIcon } from './Icons'
 import { useToast } from './Toast'
 
 type Props = {
@@ -17,6 +17,8 @@ type Props = {
   checksButtonRef: RefObject<HTMLButtonElement | null>
   /** The palette-checks pop-over, shown above the "Size board by role" button. */
   checksPopover: ReactNode
+  /** Open the checks sheet when sizing by role is switched on by touch (off after "Don't show again"). */
+  autoChecks: boolean
 }
 
 const HOVER_OPEN_MS = 250
@@ -26,7 +28,8 @@ const HOVER_CLOSE_MS = 200
  * "Size board by role" toggle that also reveals the palette checks: on hover or keyboard focus
  * where there is a pointer, and when it is switched on by touch (phones have no hover).
  */
-function SizeByRole({ proportional, onProportional, checksOpen, onChecks, buttonRef, popover }: {
+function SizeByRole({ proportional, onProportional, checksOpen, onChecks, buttonRef, popover, autoChecks }: {
+  autoChecks: boolean
   proportional: boolean
   onProportional: (on: boolean) => void
   checksOpen: boolean
@@ -61,7 +64,7 @@ function SizeByRole({ proportional, onProportional, checksOpen, onChecks, button
         onClick={() => {
           const on = !proportional
           onProportional(on)
-          if (lastPointer.current === 'touch') schedule(on, 0)
+          if (lastPointer.current === 'touch' && (autoChecks || !on)) schedule(on, 0)
           lastPointer.current = 'mouse'
         }}
         aria-pressed={proportional}
@@ -139,7 +142,7 @@ function MoreMenu({ actions }: { actions: Action[] }) {
 }
 
 export function Toolbar(props: Props) {
-  const { onExport, onExtract, squint, onSquint, proportional, onProportional, checksOpen, onChecks, checksButtonRef, checksPopover } = props
+  const { onExport, onExtract, squint, onSquint, proportional, onProportional, checksOpen, onChecks, checksButtonRef, checksPopover, autoChecks } = props
   const { dispatch, canUndo, canRedo } = usePalette()
   const toast = useToast()
 
@@ -181,6 +184,7 @@ export function Toolbar(props: Props) {
           onChecks={onChecks}
           buttonRef={checksButtonRef}
           popover={checksPopover}
+          autoChecks={autoChecks}
         />
       </div>
 
@@ -192,7 +196,7 @@ export function Toolbar(props: Props) {
         ))}
       </div>
 
-      <MoreMenu actions={actions} />
+      <MoreMenu actions={[...actions, { label: copy.checksTitle, icon: <ChecksIcon />, run: () => onChecks(true) }]} />
     </nav>
   )
 }

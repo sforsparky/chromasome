@@ -1052,6 +1052,31 @@ button:disabled {
     color var(--t-color) ease;
 }
 
+.checks__quiet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -6px 0 8px;
+  min-height: 40px;
+  color: var(--fg);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.checks__quiet input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+/* Only touch screens get the automatic sheet, so only they need the opt-out. */
+@media (hover: hover) and (pointer: fine) {
+  .checks__quiet {
+    display: none;
+  }
+}
+
 .checks__credit {
   margin: 14px 0 0;
   font-size: 12px;
