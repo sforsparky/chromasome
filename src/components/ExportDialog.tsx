@@ -11,9 +11,14 @@ type Tab = ExportFormat | 'png'
 const TABS: Tab[] = ['css', 'scss', 'tailwind', 'json', 'png']
 const MIME: Record<ExportFormat, string> = { css: 'text/css', scss: 'text/x-scss', tailwind: 'text/javascript', json: 'application/json' }
 
-type Props = { open: boolean; onClose: () => void }
+type Props = {
+  open: boolean
+  onClose: () => void
+  /** The board is sized by role, so the PNG starts on the matching 60·30·10 layout. */
+  proportional: boolean
+}
 
-export function ExportDialog({ open, onClose }: Props) {
+export function ExportDialog({ open, onClose, proportional }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
   const { palette } = usePalette()
   const toast = useToast()
@@ -24,9 +29,12 @@ export function ExportDialog({ open, onClose }: Props) {
   useEffect(() => {
     const d = ref.current
     if (!d) return
-    if (open && !d.open) d.showModal()
+    if (open && !d.open) {
+      setPngLayout(proportional ? 'roles' : 'equal')
+      d.showModal()
+    }
     if (!open && d.open) d.close()
-  }, [open])
+  }, [open, proportional])
 
   // Render the PNG lazily when its tab is shown; revoke the preview URL afterwards.
   useEffect(() => {
@@ -61,7 +69,7 @@ export function ExportDialog({ open, onClose }: Props) {
   const onDownload = () => {
     if (tab === 'png') {
       if (!png) return
-      downloadBlob(png.blob, exportFilename(palette, pngLayout === 'roles' ? 'roles.png' : 'png'))
+      downloadBlob(png.blob, exportFilename(palette, 'png').replace(/\.png$/, pngLayout === 'roles' ? '-roles.png' : '.png'))
     } else {
       downloadText(text, exportFilename(palette, FORMAT_EXTENSIONS[tab]), MIME[tab])
     }

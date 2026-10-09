@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <!-- Browser-tab icon: the app icon with rounded corners. Source: design/app-icon.svg -->
-  <rect width="32" height="32" rx="7" fill="#0f0f10"/>
-  <g transform="translate(9 5) scale(1)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" shape-rendering="crispEdges">
+  <!-- Chromasome app icon: the 8-bit helix (same pixels as BrandMark in src/components/Icons.tsx), square and full bleed; iOS and Android round the corners. PNGs are rendered at whole-pixel cells: 180 and 192 px at 6 px a cell, 512 px at 16. -->
+  <rect width="180" height="180" fill="#0f0f10"/>
+  <g transform="translate(48 27) scale(6)">
     <rect x="0" y="0" width="2" height="1" fill="#ff4d6d"/>
     <rect x="12" y="0" width="2" height="1" fill="#3ddc84"/>
     <rect x="0" y="1" width="2" height="1" fill="#ff4d6d"/>
