@@ -59,7 +59,7 @@ function Shell() {
       {checksOpen && (
         <ChecksPanel report={report} hexes={hexes} proportional={proportional} onProportional={setProportional} onClose={closeChecks} />
       )}
-      <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} />
+      <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} proportional={proportional} />
       <ExtractDialog open={extractOpen} onClose={() => setExtractOpen(false)} />
     </div>
   )
