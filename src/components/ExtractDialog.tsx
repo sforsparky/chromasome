@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type DragEvent } from 'react'
 import { copy } from '../copy'
+import { track } from '../lib/analytics/ga'
 import { textColorFor } from '../lib/color/contrast'
 import { extractPalette, MAX_IMAGE_BYTES } from '../lib/extract/fromImage'
 import { usePalette } from '../state/PaletteProvider'
@@ -75,6 +76,7 @@ export function ExtractDialog({ open, onClose }: Props) {
   const useStrand = () => {
     if (!hexes) return
     dispatch({ type: 'LOAD', hexes })
+    track('extract_photo')
     close()
   }
 

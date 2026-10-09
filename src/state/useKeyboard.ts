@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { track } from '../lib/analytics/ga'
 import { usePalette } from './PaletteProvider'
 
 const NON_TEXT_INPUTS = new Set(['range', 'color', 'checkbox', 'radio', 'button', 'file', 'submit'])
@@ -32,6 +33,7 @@ export function useKeyboard(onEscape?: () => void) {
       if (e.code === 'Space' && !mod) {
         e.preventDefault()
         dispatch({ type: 'MUTATE' })
+        track('mutate', { source: 'space' })
         return
       }
       if (mod && e.key.toLowerCase() === 'z') {
