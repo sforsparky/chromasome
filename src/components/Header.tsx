@@ -1,12 +1,23 @@
 import { copy } from '../copy'
-import { CoffeeIcon, DnaIcon } from './Icons'
+import { BrandMark, CoffeeIcon } from './Icons'
+
+/** CHROMA takes the helix's six colors, one per letter; SOME stays plain. */
+const SPECTRUM = ['#ff4d6d', '#ff9f1c', '#ffd23f', '#3ddc84', '#2ec4ff', '#8a5cff']
+const CHROMA = copy.appName.slice(0, SPECTRUM.length)
 
 export function Header() {
   return (
     <header className="header">
       <a className="header__brand" href={copy.brandUrl} rel="noreferrer">
-        <DnaIcon width={22} height={22} />
-        <span className="header__name">{copy.appName}</span>
+        <BrandMark />
+        <span className="header__name">
+          {[...CHROMA].map((ch, i) => (
+            <span key={i} style={{ color: SPECTRUM[i] }}>
+              {ch}
+            </span>
+          ))}
+          {copy.appName.slice(CHROMA.length)}
+        </span>
       </a>
       <a className="header__coffee" href={copy.coffeeUrl} target="_blank" rel="noopener noreferrer" aria-label={copy.coffee} title={copy.coffee}>
         <CoffeeIcon width={16} height={16} />

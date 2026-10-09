@@ -3,6 +3,7 @@ import { ChecksPanel } from './components/ChecksPanel'
 import { ExportDialog } from './components/ExportDialog'
 import { ExtractDialog } from './components/ExtractDialog'
 import { Header } from './components/Header'
+import { InstallBanner } from './components/InstallBanner'
 import { PaletteBoard } from './components/PaletteBoard'
 import { ToastProvider } from './components/Toast'
 import { Toolbar } from './components/Toolbar'
@@ -12,6 +13,26 @@ import { PaletteProvider, usePalette } from './state/PaletteProvider'
 import { useKeyboard } from './state/useKeyboard'
 import { useUrlSync } from './state/useUrlSync'
 
+/** Phones: "Don't show again" on the checks sheet, remembered per device. Storage can be unavailable (private mode). */
+const QUIET_CHECKS_KEY = 'chromasome.quietChecks'
+
+function readQuietChecks(): boolean {
+  try {
+    return localStorage.getItem(QUIET_CHECKS_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function writeQuietChecks(quiet: boolean) {
+  try {
+    if (quiet) localStorage.setItem(QUIET_CHECKS_KEY, '1')
+    else localStorage.removeItem(QUIET_CHECKS_KEY)
+  } catch {
+    /* not remembered; the choice still applies for this visit */
+  }
+}
+
 function Shell() {
   const { palette } = usePalette()
   const [adjustingId, setAdjustingId] = useState<string | null>(null)
@@ -20,6 +41,11 @@ function Shell() {
   const [checksOpen, setChecksOpen] = useState(false)
   const [squint, setSquint] = useState(false)
   const [proportional, setProportional] = useState(false)
+  const [quietChecks, setQuietChecks] = useState(readQuietChecks)
+  const changeQuietChecks = useCallback((quiet: boolean) => {
+    setQuietChecks(quiet)
+    writeQuietChecks(quiet)
+  }, [])
   const checksButton = useRef<HTMLButtonElement>(null)
 
   // Closing the panel removes the focused element, so hand focus back to the button that opened it.
@@ -37,7 +63,7 @@ function Shell() {
   useKeyboard(useCallback(() => (adjustingId ? setAdjustingId(null) : closeChecks()), [adjustingId, closeChecks]))
 
   return (
-    <div className={`app${checksOpen ? ' app--checks' : ''}`}>
+    <div className="app">
       <Header />
       <PaletteBoard
         adjustingId={adjustingId}
@@ -47,18 +73,20 @@ function Shell() {
         proportional={proportional}
         showRoles={checksOpen || proportional}
       />
+      <InstallBanner hidden={checksOpen} />
       <Toolbar
         onExport={() => setExportOpen(true)}
         onExtract={() => setExtractOpen(true)}
         squint={squint}
         onSquint={setSquint}
+        proportional={proportional}
+        onProportional={setProportional}
         checksOpen={checksOpen}
         onChecks={setChecksOpen}
         checksButtonRef={checksButton}
+        autoChecks={!quietChecks}
+        checksPopover={checksOpen && <ChecksPanel report={report} hexes={hexes} onClose={closeChecks} quiet={quietChecks} onQuiet={changeQuietChecks} />}
       />
-      {checksOpen && (
-        <ChecksPanel report={report} hexes={hexes} proportional={proportional} onProportional={setProportional} onClose={closeChecks} />
-      )}
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} proportional={proportional} />
       <ExtractDialog open={extractOpen} onClose={() => setExtractOpen(false)} />
     </div>
