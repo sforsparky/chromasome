@@ -162,6 +162,13 @@ export const RatioIcon = (p: IconProps) => (
   </svg>
 )
 
+/** iOS-style Share: a box with an arrow out of the top. */
+export const ShareIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 15V3M8 7l4-4 4 4M8 11H6v10h12V11h-2" />
+  </svg>
+)
+
 export const MoreIcon = (p: IconProps) => (
   <svg {...base(p)}>
     <circle cx="12" cy="5" r="1.2" fill="currentColor" />

@@ -95,7 +95,9 @@ button:disabled {
 
 .app {
   display: grid;
-  grid-template-rows: var(--header-h) 1fr var(--toolbar-h);
+  /* The install banner, when shown, takes its own row above the toolbar so it never covers a color. */
+  grid-template-rows: var(--header-h) 1fr auto var(--toolbar-h);
+  grid-template-areas: 'header' 'board' 'install' 'toolbar';
   /* minmax(0, …) so wide column content can never push the page past the viewport. */
   grid-template-columns: minmax(0, 1fr);
   height: 100%;
@@ -113,6 +115,7 @@ button:disabled {
 /* Header ------------------------------------------------------------- */
 
 .header {
+  grid-area: header;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -190,6 +193,7 @@ button:disabled {
 /* Board + columns ---------------------------------------------------- */
 
 .board {
+  grid-area: board;
   display: flex;
   min-height: 0;
   position: relative;
@@ -606,6 +610,7 @@ button:disabled {
 /* Toolbar ------------------------------------------------------------ */
 
 .toolbar {
+  grid-area: toolbar;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1227,6 +1232,67 @@ button:disabled {
 /* Toast -------------------------------------------------------------- */
 
 /* Enters and exits the same way: up from the toolbar, back down to it. */
+/* Install banner (phones) ------------------------------------------- */
+
+.install {
+  grid-area: install;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px calc(8px + var(--safe-right)) 10px calc(16px + var(--safe-left));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  transition:
+    opacity var(--t-dialog) var(--ease-out),
+    transform var(--t-dialog) var(--ease-out);
+}
+
+@starting-style {
+  .install {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.install__mark {
+  flex: 0 0 auto;
+}
+
+.install__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.install__title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.install__hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.install__share {
+  vertical-align: -2px;
+}
+
+.install__go {
+  flex: 0 0 auto;
+}
+
+.install__close {
+  flex: 0 0 auto;
+}
+
+/* Keep toasts clear of the banner. */
+body:has(.install) .toast {
+  bottom: calc(var(--toolbar-h) + 96px);
+}
+
 .toast {
   position: fixed;
   left: 50%;
@@ -1263,6 +1329,7 @@ button:disabled {
   .inserter__btn,
   .checks,
   .menu,
+  .install,
   .preview__segment {
     transition-property: opacity, background-color, color, overlay, display;
   }
@@ -1315,10 +1382,11 @@ button:disabled {
     flex-direction: column;
   }
 
+  /* The left 36px is a rail for the + inserters, so they never sit on the hex or name. */
   .column {
     flex-direction: row;
     justify-content: space-between;
-    padding: 0 12px;
+    padding: 0 12px 0 36px;
   }
 
   .column__controls {
@@ -1370,11 +1438,16 @@ button:disabled {
 
   .inserter__btn {
     top: 0;
-    left: 60px;
+    left: 18px;
     opacity: 1;
     transform: translate(-50%, -50%);
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .inserter__btn svg {
+    width: 14px;
+    height: 14px;
   }
 
   .inserter::before {

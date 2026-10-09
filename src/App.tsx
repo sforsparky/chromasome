@@ -3,6 +3,7 @@ import { ChecksPanel } from './components/ChecksPanel'
 import { ExportDialog } from './components/ExportDialog'
 import { ExtractDialog } from './components/ExtractDialog'
 import { Header } from './components/Header'
+import { InstallBanner } from './components/InstallBanner'
 import { PaletteBoard } from './components/PaletteBoard'
 import { ToastProvider } from './components/Toast'
 import { Toolbar } from './components/Toolbar'
@@ -72,6 +73,7 @@ function Shell() {
         proportional={proportional}
         showRoles={checksOpen || proportional}
       />
+      <InstallBanner hidden={checksOpen} />
       <Toolbar
         onExport={() => setExportOpen(true)}
         onExtract={() => setExtractOpen(true)}
