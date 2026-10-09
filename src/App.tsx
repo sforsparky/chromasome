@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { ChecksPanel } from './components/ChecksPanel'
 import { ExportDialog } from './components/ExportDialog'
 import { ExtractDialog } from './components/ExtractDialog'
@@ -12,9 +12,6 @@ import { decodeHash } from './lib/url/codec'
 import { PaletteProvider, usePalette } from './state/PaletteProvider'
 import { useKeyboard } from './state/useKeyboard'
 import { useUrlSync } from './state/useUrlSync'
-
-/** Deploy previews only: a viewport readout for fitting the home-screen app to real iPhones. */
-const ViewportProbe = import.meta.env.VITE_VIEWPORT_PROBE ? lazy(() => import('./components/ViewportProbe')) : null
 
 /** Phones: "Don't show again" on the checks sheet, remembered per device. Storage can be unavailable (private mode). */
 const QUIET_CHECKS_KEY = 'chromasome.quietChecks'
@@ -92,11 +89,6 @@ function Shell() {
       />
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} proportional={proportional} />
       <ExtractDialog open={extractOpen} onClose={() => setExtractOpen(false)} />
-      {ViewportProbe && (
-        <Suspense fallback={null}>
-          <ViewportProbe />
-        </Suspense>
-      )}
     </div>
   )
 }

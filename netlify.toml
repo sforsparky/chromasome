@@ -8,11 +8,6 @@
 [build.environment]
   NODE_VERSION = "22"
 
-# Deploy previews get a "Viewport" readout for fitting the home-screen app to real phones.
-[context.deploy-preview.environment]
-  NODE_VERSION = "22"
-  VITE_VIEWPORT_PROBE = "1"
-
 # Long-lived caching for hashed assets; index.html stays fresh.
 [[headers]]
   for = "/assets/*"
