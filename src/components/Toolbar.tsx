@@ -1,15 +1,21 @@
+import type { RefObject } from 'react'
 import { copy } from '../copy'
 import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
-import { DownloadIcon, ImageIcon, LinkIcon, RedoIcon, UndoIcon } from './Icons'
+import { ChecksIcon, DownloadIcon, EyeIcon, ImageIcon, LinkIcon, RedoIcon, UndoIcon } from './Icons'
 import { useToast } from './Toast'
 
 type Props = {
   onExport: () => void
   onExtract: () => void
+  squint: boolean
+  onSquint: (on: boolean) => void
+  checksOpen: boolean
+  onChecks: (open: boolean) => void
+  checksButtonRef: RefObject<HTMLButtonElement | null>
 }
 
-export function Toolbar({ onExport, onExtract }: Props) {
+export function Toolbar({ onExport, onExtract, squint, onSquint, checksOpen, onChecks, checksButtonRef }: Props) {
   const { dispatch, canUndo, canRedo } = usePalette()
   const toast = useToast()
 
@@ -31,6 +37,24 @@ export function Toolbar({ onExport, onExtract }: Props) {
         </button>
         <button type="button" className="btn btn--icon" onClick={() => dispatch({ type: 'REDO' })} disabled={!canRedo} aria-label={copy.redo} title={copy.redo}>
           <RedoIcon />
+        </button>
+      </div>
+
+      <div className="toolbar__group">
+        <button type="button" className="btn btn--icon btn--toggle" onClick={() => onSquint(!squint)} aria-pressed={squint} aria-label={copy.squint} title={copy.squint}>
+          <EyeIcon />
+        </button>
+        <button
+          ref={checksButtonRef}
+          type="button"
+          className="btn btn--icon btn--toggle"
+          onClick={() => onChecks(!checksOpen)}
+          aria-expanded={checksOpen}
+          aria-controls="checks-panel"
+          aria-label={copy.checks}
+          title={copy.checks}
+        >
+          <ChecksIcon />
         </button>
       </div>
 

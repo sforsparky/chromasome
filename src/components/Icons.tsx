@@ -121,9 +121,50 @@ export const ImageIcon = (p: IconProps) => (
   </svg>
 )
 
+export const CoffeeIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9Z" />
+    <path d="M17 11h1.5a2.5 2.5 0 0 1 0 5H17" />
+    <path d="M8 3.5c0 1 1 1.5 1 2.5M12 3.5c0 1 1 1.5 1 2.5" />
+  </svg>
+)
+
 export const DnaIcon = (p: IconProps) => (
   <svg {...base(p)}>
     <path d="M7 3c0 6 10 6 10 12s-10 6-10 6M17 3c0 6-10 6-10 12s10 6 10 6" />
     <path d="M8.5 7h7M8.5 17h7M10 12h4" />
+  </svg>
+)
+
+export const EyeIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+)
+
+export const ChecksIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="m4 6 1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17" />
+    <path d="M12 6h8M12 12h8M12 18h8" />
+  </svg>
+)
+
+export const CheckIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="m5 12 5 5 9-10" />
+  </svg>
+)
+
+export const AlertIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 7v6M12 17h0" />
+  </svg>
+)
+
+export const RatioIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M14 5v14M18.5 5v14" />
   </svg>
 )
