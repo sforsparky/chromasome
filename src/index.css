@@ -1,3 +1,12 @@
+/* JetBrains Mono (SIL OFL 1.1, see assets/fonts/JetBrainsMono-OFL.txt), Latin subset, for the wordmark. */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('./assets/fonts/jetbrains-mono-latin.woff2') format('woff2');
+}
+
 :root {
   --bg: #0f0f10;
   --fg: #f4f4f5;
@@ -115,12 +124,18 @@ button:disabled {
 .header__brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--fg);
   text-decoration: none;
+}
+
+/* Wordmark: JetBrains Mono, all caps; the CHROMA letters are colored in Header.tsx. */
+.header__name {
+  font-family: 'JetBrains Mono', var(--mono);
   font-weight: 700;
-  letter-spacing: 0.02em;
-  font-size: 18px;
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* Quiet support link: muted like the rest of the header, the cup warms to coffee-yellow on hover. */

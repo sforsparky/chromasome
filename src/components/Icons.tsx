@@ -171,22 +171,56 @@ export const MoreIcon = (p: IconProps) => (
 )
 
 /** The Chromasome mark in brand colors: warm strand, white rungs, cool strand over them (matches the app icon). */
-export const BrandMark = (p: IconProps) => (
-  <svg {...base(p)} stroke="none">
-    <defs>
-      <linearGradient id="brand-warm" gradientUnits="userSpaceOnUse" x1="0" y1="3" x2="0" y2="21">
-        <stop offset="0" stopColor="#ff4d6d" />
-        <stop offset=".5" stopColor="#ff9f1c" />
-        <stop offset="1" stopColor="#ffd23f" />
-      </linearGradient>
-      <linearGradient id="brand-cool" gradientUnits="userSpaceOnUse" x1="0" y1="3" x2="0" y2="21">
-        <stop offset="0" stopColor="#3ddc84" />
-        <stop offset=".5" stopColor="#2ec4ff" />
-        <stop offset="1" stopColor="#8a5cff" />
-      </linearGradient>
-    </defs>
-    <path d="M7 3c0 6 10 6 10 12s-10 6-10 6" stroke="url(#brand-warm)" />
-    <path d="M8.5 7H14.96M8.5 17h7M8.07 12H14" stroke="#ffffff" />
-    <path d="M17 3c0 6-10 6-10 12s10 6 10 6" stroke="url(#brand-cool)" />
+/**
+ * The 8-bit helix, 14×21 pixels. W = warm strand, C = cool strand, R = rung.
+ * The cool strand is painted last, so it passes over the rungs and the warm strand.
+ */
+const MARK = [
+  'WW..........CC',
+  'WW..........CC',
+  '.WW........CC.',
+  '.WW........CC.',
+  '..WWWRRRRCCC..',
+  '....WWWCCC....',
+  '.....CCCW.....',
+  '....CCCWWW....',
+  '..CCC....WWW..',
+  '.CCC......WWW.',
+  '.CCRRRRRR..WW.',
+  'CC..........WW',
+  'CC..........WW',
+  'CC..........WW',
+  'CC..........WW',
+  '.CC........WW.',
+  '.CCCRRRRRRWWW.',
+  '..CCCC..WWWW..',
+  '.....CCCCW....',
+  'WWWWWWWCCCCCCC',
+  'WWW........CCC',
+]
+// Each strand's gradient in five flat steps, top to bottom, the way an 8-bit palette would band it.
+const WARM_BANDS = ['#ff4d6d', '#ff7645', '#ff9f1c', '#ffb92e', '#ffd23f']
+const COOL_BANDS = ['#3ddc84', '#36d0c2', '#2ec4ff', '#5c90ff', '#8a5cff']
+
+/** One rect per horizontal run of a single color. */
+const MARK_RUNS = MARK.flatMap((line, y) => {
+  const band = Math.round((y / (MARK.length - 1)) * (WARM_BANDS.length - 1))
+  const colorOf = (ch: string) => (ch === 'W' ? WARM_BANDS[band] : ch === 'C' ? COOL_BANDS[band] : ch === 'R' ? '#ffffff' : null)
+  const runs: { x: number; y: number; w: number; fill: string }[] = []
+  for (let x = 0; x < line.length; ) {
+    const fill = colorOf(line[x])
+    let w = 1
+    while (x + w < line.length && colorOf(line[x + w]) === fill) w++
+    if (fill) runs.push({ x, y, w, fill })
+    x += w
+  }
+  return runs
+})
+
+export const BrandMark = ({ width = 14, height = 21, ...rest }: IconProps) => (
+  <svg width={width} height={height} viewBox="0 0 14 21" shapeRendering="crispEdges" aria-hidden="true" focusable="false" {...rest}>
+    {MARK_RUNS.map((r) => (
+      <rect key={`${r.x}-${r.y}`} x={r.x} y={r.y} width={r.w} height={1} fill={r.fill} />
+    ))}
   </svg>
 )
