@@ -116,6 +116,10 @@ button:disabled {
 
 .header {
   grid-area: header;
+  /* iOS 26 home-screen apps fade a glass blur over the page under the status bar unless a pinned,
+     solid, full-width bar sits at the top edge. Sticky keeps the header that bar; nothing scrolls here anyway. */
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1360,6 +1364,24 @@ body:has(.install) .toast {
 
   .column__hex-label--swapping {
     filter: none;
+  }
+}
+
+/* Home-screen web app ------------------------------------------------ */
+
+@media (display-mode: standalone) {
+  /* iOS 26 reports 100% and 100dvh short by the status bar height, which left a dark band under the
+     toolbar. 100lvh is the whole screen there, and equals 100% everywhere else. */
+  html,
+  body,
+  #root {
+    height: 100lvh;
+  }
+
+  /* If iOS still leaves a strip below the page, it matches the toolbar instead of the darker page. */
+  html,
+  body {
+    background: var(--surface);
   }
 }
 
