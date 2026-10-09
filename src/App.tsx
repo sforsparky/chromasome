@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { ChecksPanel } from './components/ChecksPanel'
+import { ConsentBanner } from './components/ConsentBanner'
 import { ExportDialog } from './components/ExportDialog'
 import { ExtractDialog } from './components/ExtractDialog'
 import { Header } from './components/Header'
@@ -7,9 +8,11 @@ import { InstallBanner } from './components/InstallBanner'
 import { PaletteBoard } from './components/PaletteBoard'
 import { ToastProvider } from './components/Toast'
 import { Toolbar } from './components/Toolbar'
+import { track } from './lib/analytics/ga'
 import { evaluatePalette } from './lib/color/checks'
 import { decodeHash } from './lib/url/codec'
 import { PaletteProvider, usePalette } from './state/PaletteProvider'
+import { useAnalytics } from './state/useAnalytics'
 import { useKeyboard } from './state/useKeyboard'
 import { useUrlSync } from './state/useUrlSync'
 
@@ -47,6 +50,16 @@ function Shell() {
     writeQuietChecks(quiet)
   }, [])
   const checksButton = useRef<HTMLButtonElement>(null)
+  const analytics = useAnalytics()
+
+  const changeSquint = useCallback((on: boolean) => {
+    setSquint(on)
+    if (on) track('squint_on')
+  }, [])
+  const changeProportional = useCallback((on: boolean) => {
+    setProportional(on)
+    if (on) track('size_by_role_on')
+  }, [])
 
   // Closing the panel removes the focused element, so hand focus back to the button that opened it.
   const closeChecks = useCallback(() => {
@@ -64,7 +77,7 @@ function Shell() {
 
   return (
     <div className="app">
-      <Header />
+      <Header onCookieSettings={analytics.openSettings} />
       <PaletteBoard
         adjustingId={adjustingId}
         onAdjust={setAdjustingId}
@@ -73,22 +86,24 @@ function Shell() {
         proportional={proportional}
         showRoles={checksOpen || proportional}
       />
-      <InstallBanner hidden={checksOpen} />
+      <InstallBanner hidden={checksOpen || analytics.showBanner} />
       <Toolbar
         onExport={() => setExportOpen(true)}
         onExtract={() => setExtractOpen(true)}
         squint={squint}
-        onSquint={setSquint}
+        onSquint={changeSquint}
         proportional={proportional}
-        onProportional={setProportional}
+        onProportional={changeProportional}
         checksOpen={checksOpen}
         onChecks={setChecksOpen}
         checksButtonRef={checksButton}
         autoChecks={!quietChecks}
+        onCookieSettings={analytics.openSettings}
         checksPopover={checksOpen && <ChecksPanel report={report} hexes={hexes} onClose={closeChecks} quiet={quietChecks} onQuiet={changeQuietChecks} />}
       />
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} proportional={proportional} />
       <ExtractDialog open={extractOpen} onClose={() => setExtractOpen(false)} />
+      {analytics.showBanner && <ConsentBanner onDecide={analytics.decide} />}
     </div>
   )
 }

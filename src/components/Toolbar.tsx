@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 import { copy } from '../copy'
 import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
-import { ChecksIcon, DownloadIcon, EyeIcon, ImageIcon, LinkIcon, MoreIcon, RatioIcon, RedoIcon, UndoIcon } from './Icons'
+import { ChecksIcon, CookieIcon, DownloadIcon, EyeIcon, ImageIcon, LinkIcon, MoreIcon, RatioIcon, RedoIcon, UndoIcon } from './Icons'
+import { track } from '../lib/analytics/ga'
 import { useToast } from './Toast'
 
 type Props = {
@@ -19,6 +20,8 @@ type Props = {
   checksPopover: ReactNode
   /** Open the checks sheet when sizing by role is switched on by touch (off after "Don't show again"). */
   autoChecks: boolean
+  /** Phones: "Cookie settings" in the ⋮ menu, only where cookie consent applies. */
+  onCookieSettings?: () => void
 }
 
 const HOVER_OPEN_MS = 250
@@ -142,13 +145,14 @@ function MoreMenu({ actions }: { actions: Action[] }) {
 }
 
 export function Toolbar(props: Props) {
-  const { onExport, onExtract, squint, onSquint, proportional, onProportional, checksOpen, onChecks, checksButtonRef, checksPopover, autoChecks } = props
+  const { onExport, onExtract, squint, onSquint, proportional, onProportional, checksOpen, onChecks, checksButtonRef, checksPopover, autoChecks, onCookieSettings } = props
   const { dispatch, canUndo, canRedo } = usePalette()
   const toast = useToast()
 
   const copyCode = async () => {
     await copyText(window.location.href)
     toast.show(copy.toastCopiedCode)
+    track('copy_color_code')
   }
 
   const actions: Action[] = [
@@ -159,7 +163,14 @@ export function Toolbar(props: Props) {
 
   return (
     <nav className="toolbar" aria-label="Palette actions">
-      <button type="button" className="btn btn--primary" onClick={() => dispatch({ type: 'MUTATE' })}>
+      <button
+        type="button"
+        className="btn btn--primary"
+        onClick={() => {
+          dispatch({ type: 'MUTATE' })
+          track('mutate', { source: 'button' })
+        }}
+      >
         {copy.mutate}
         <kbd className="btn__hint">{copy.mutateHint}</kbd>
       </button>
@@ -196,7 +207,13 @@ export function Toolbar(props: Props) {
         ))}
       </div>
 
-      <MoreMenu actions={[...actions, { label: copy.checksTitle, icon: <ChecksIcon />, run: () => onChecks(true) }]} />
+      <MoreMenu
+        actions={[
+          ...actions,
+          { label: copy.checksTitle, icon: <ChecksIcon />, run: () => onChecks(true) },
+          ...(onCookieSettings ? [{ label: copy.cookieSettings, icon: <CookieIcon />, run: onCookieSettings }] : []),
+        ]}
+      />
     </nav>
   )
 }
