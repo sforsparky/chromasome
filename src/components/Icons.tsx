@@ -169,13 +169,6 @@ export const RatioIcon = (p: IconProps) => (
   </svg>
 )
 
-export const InfoIcon = (p: IconProps) => (
-  <svg {...base(p)}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 11v5M12 8h0" />
-  </svg>
-)
-
 export const MoreIcon = (p: IconProps) => (
   <svg {...base(p)}>
     <circle cx="12" cy="5" r="1.2" fill="currentColor" />

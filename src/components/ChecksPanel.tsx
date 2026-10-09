@@ -12,9 +12,9 @@ type Props = {
 
 const STATUS_ICON: Record<CheckStatus, typeof CheckIcon> = { pass: CheckIcon, warn: AlertIcon, fail: CloseIcon }
 
-/** Pop-over above the ⓘ button. Non-modal: Space keeps mutating while it is open, and the checks follow along. */
+/** Pop-over above the "Size board by role" button. Non-modal: Space keeps mutating while it is open, and the checks follow along. */
 export function ChecksPanel({ report, hexes, onClose }: Props) {
-  // A tap anywhere else closes it; the ⓘ button toggles it itself.
+  // A tap anywhere else closes it; taps on the size button are handled there.
   useEffect(() => {
     const onPointer = (e: PointerEvent) => {
       const target = e.target as Element

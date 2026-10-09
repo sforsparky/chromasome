@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 import { copy } from '../copy'
 import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
-import { DownloadIcon, EyeIcon, ImageIcon, InfoIcon, LinkIcon, MoreIcon, RatioIcon, RedoIcon, UndoIcon } from './Icons'
+import { DownloadIcon, EyeIcon, ImageIcon, LinkIcon, MoreIcon, RatioIcon, RedoIcon, UndoIcon } from './Icons'
 import { useToast } from './Toast'
 
 type Props = {
@@ -15,8 +15,65 @@ type Props = {
   checksOpen: boolean
   onChecks: (open: boolean) => void
   checksButtonRef: RefObject<HTMLButtonElement | null>
-  /** The palette-checks pop-over, anchored above the ⓘ button. */
+  /** The palette-checks pop-over, shown above the "Size board by role" button. */
   checksPopover: ReactNode
+}
+
+const HOVER_OPEN_MS = 250
+const HOVER_CLOSE_MS = 200
+
+/**
+ * "Size board by role" toggle that also reveals the palette checks: on hover or keyboard focus
+ * where there is a pointer, and when it is switched on by touch (phones have no hover).
+ */
+function SizeByRole({ proportional, onProportional, checksOpen, onChecks, buttonRef, popover }: {
+  proportional: boolean
+  onProportional: (on: boolean) => void
+  checksOpen: boolean
+  onChecks: (open: boolean) => void
+  buttonRef: RefObject<HTMLButtonElement | null>
+  popover: ReactNode
+}) {
+  const timer = useRef<number | undefined>(undefined)
+  const lastPointer = useRef('mouse')
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+
+  const schedule = (open: boolean, ms: number) => {
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => onChecks(open), ms)
+  }
+
+  return (
+    <span
+      className="toolbar__checks"
+      onPointerEnter={(e) => e.pointerType !== 'touch' && schedule(true, checksOpen ? 0 : HOVER_OPEN_MS)}
+      onPointerLeave={(e) => e.pointerType !== 'touch' && schedule(false, HOVER_CLOSE_MS)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) schedule(false, 0)
+      }}
+    >
+      <button
+        ref={buttonRef}
+        type="button"
+        className="btn btn--icon btn--toggle"
+        onPointerDown={(e) => (lastPointer.current = e.pointerType)}
+        onFocus={(e) => e.currentTarget.matches(':focus-visible') && schedule(true, 0)}
+        onClick={() => {
+          const on = !proportional
+          onProportional(on)
+          if (lastPointer.current === 'touch') schedule(on, 0)
+          lastPointer.current = 'mouse'
+        }}
+        aria-pressed={proportional}
+        aria-controls="checks-panel"
+        aria-label={copy.proportional}
+        title={checksOpen ? undefined : copy.proportional}
+      >
+        <RatioIcon />
+      </button>
+      {popover}
+    </span>
+  )
 }
 
 type Action = { label: string; icon: ReactNode; run: () => void }
@@ -117,29 +174,14 @@ export function Toolbar(props: Props) {
         <button type="button" className="btn btn--icon btn--toggle" onClick={() => onSquint(!squint)} aria-pressed={squint} aria-label={copy.squint} title={copy.squint}>
           <EyeIcon />
         </button>
-        <button
-          type="button"
-          className="btn btn--icon btn--toggle"
-          onClick={() => onProportional(!proportional)}
-          aria-pressed={proportional}
-          aria-label={copy.proportional}
-          title={copy.proportional}
-        >
-          <RatioIcon />
-        </button>
-        <button
-          ref={checksButtonRef}
-          type="button"
-          className="btn btn--icon btn--toggle"
-          onClick={() => onChecks(!checksOpen)}
-          aria-expanded={checksOpen}
-          aria-controls="checks-panel"
-          aria-label={copy.checks}
-          title={copy.checks}
-        >
-          <InfoIcon />
-        </button>
-        {checksPopover}
+        <SizeByRole
+          proportional={proportional}
+          onProportional={onProportional}
+          checksOpen={checksOpen}
+          onChecks={onChecks}
+          buttonRef={checksButtonRef}
+          popover={checksPopover}
+        />
       </div>
 
       <div className="toolbar__group toolbar__group--right">

@@ -13,7 +13,7 @@ Press space to mutate a new strand of colors, lock the ones you want to keep, ad
 - **Undo / redo** with Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z.
 - **Color code**: the palette lives in the URL hash, so the link *is* the palette:
   `https://inmydna.com/chromasome/#/264653-2a9d8f-e9c46a-f4a261-e76f51`
-- **Palette checks** (the ⓘ button) opens a live pop-over that scores the strand against three rules: one loud, the rest quiet; dark, middle and light; the loud color takes the least space. It shows a 60/30/10 preview and a small mock page. The checks are adapted from Alena Song's [free color lesson](https://asongstudio.com/courses/free-color-lesson).
+- **Palette checks** pop up when you hover the *Size board by role* button (or switch it on, on phones): a live panel that scores the strand against three rules: one loud, the rest quiet; dark, middle and light; the loud color takes the least space. It shows a 60/30/10 preview and a small mock page. The checks are adapted from Alena Song's [free color lesson](https://asongstudio.com/courses/free-color-lesson).
 - **Size board by role** resizes the columns to their 60/30/10 shares and labels each color's role.
 - **Squint** shows every color as its greyscale value, the quick test for whether dark, middle and light hold up.
 - **Export** as CSS custom properties, SCSS variables, a Tailwind config snippet, JSON, or a 1600×900 PNG (equal columns or 60·30·10). CSS, SCSS and Tailwind add role aliases after the numbered colors (`--color-bg`, `$color-bg`, `strand-bg`, plus `second` and `accent`); JSON gives each color its `role` and `share`.

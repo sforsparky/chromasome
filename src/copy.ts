@@ -38,7 +38,6 @@ export const copy = {
   dropImage: 'Drop an image here or click to choose one',
   extracting: 'Reading the photo…',
 
-  checks: 'Palette checks',
   more: 'More actions',
   checksTitle: 'Palette checks',
   checksSummary: (passed: number, total: number) => `${passed} of ${total} checks pass`,
