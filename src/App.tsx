@@ -37,7 +37,7 @@ function Shell() {
   useKeyboard(useCallback(() => (adjustingId ? setAdjustingId(null) : closeChecks()), [adjustingId, closeChecks]))
 
   return (
-    <div className={`app${checksOpen ? ' app--checks' : ''}`}>
+    <div className="app">
       <Header />
       <PaletteBoard
         adjustingId={adjustingId}
@@ -52,13 +52,13 @@ function Shell() {
         onExtract={() => setExtractOpen(true)}
         squint={squint}
         onSquint={setSquint}
+        proportional={proportional}
+        onProportional={setProportional}
         checksOpen={checksOpen}
         onChecks={setChecksOpen}
         checksButtonRef={checksButton}
+        checksPopover={checksOpen && <ChecksPanel report={report} hexes={hexes} onClose={closeChecks} />}
       />
-      {checksOpen && (
-        <ChecksPanel report={report} hexes={hexes} proportional={proportional} onProportional={setProportional} onClose={closeChecks} />
-      )}
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} proportional={proportional} />
       <ExtractDialog open={extractOpen} onClose={() => setExtractOpen(false)} />
     </div>

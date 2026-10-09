@@ -13,10 +13,11 @@ Press space to mutate a new strand of colors, lock the ones you want to keep, ad
 - **Undo / redo** with Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z.
 - **Color code**: the palette lives in the URL hash, so the link *is* the palette:
   `https://inmydna.com/chromasome/#/264653-2a9d8f-e9c46a-f4a261-e76f51`
-- **Checks** opens a live panel that scores the strand against three rules: one loud, the rest quiet; dark, middle and light; the loud color takes the least space. It shows a 60/30/10 preview and a small mock page, and can size the board by role. The checks are adapted from Alena Song's [free color lesson](https://asongstudio.com/courses/free-color-lesson).
+- **Palette checks** (the ⓘ button) opens a live pop-over that scores the strand against three rules: one loud, the rest quiet; dark, middle and light; the loud color takes the least space. It shows a 60/30/10 preview and a small mock page. The checks are adapted from Alena Song's [free color lesson](https://asongstudio.com/courses/free-color-lesson).
+- **Size board by role** resizes the columns to their 60/30/10 shares and labels each color's role.
 - **Squint** shows every color as its greyscale value, the quick test for whether dark, middle and light hold up.
 - **Export** as CSS custom properties, SCSS variables, a Tailwind config snippet, JSON, or a 1600×900 PNG (equal columns or 60·30·10). CSS, SCSS and Tailwind add role aliases after the numbered colors (`--color-bg`, `$color-bg`, `strand-bg`, plus `second` and `accent`); JSON gives each color its `role` and `share`.
-- **Extract DNA**: drop in an image and get its five dominant colors (median-cut quantization on a downscaled canvas, all client-side).
+- **Extract from photo**: drop in an image and get its five dominant colors (median-cut quantization on a downscaled canvas, all client-side).
 
 ## Development
 
@@ -53,7 +54,7 @@ Because the palette is in the URL hash, no server-side rewrite rules are needed 
 
 ```
 src/
-  copy.ts            brand vocabulary (Mutate, strand, Extract DNA, Color code…)
+  copy.ts            brand vocabulary (Mutate, strand, Color code…)
   lib/color/         hex/rgb/hsl and OKLCH conversion, WCAG contrast, color names, roles and checks, palette generation
   lib/extract/       median-cut quantization and image → palette
   lib/export/        CSS/SCSS/Tailwind/JSON strings, PNG rendering, clipboard helpers

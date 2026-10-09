@@ -12,7 +12,7 @@ export const copy = {
   lock: 'Lock',
   unlock: 'Unlock',
   strand: 'strand',
-  extractDna: 'Extract DNA',
+  extractPhoto: 'Extract from photo',
   colorCode: 'Color code',
   export: 'Export',
   undo: 'Undo',
@@ -36,9 +36,10 @@ export const copy = {
 
   useStrand: 'Use this strand',
   dropImage: 'Drop an image here or click to choose one',
-  extracting: 'Reading DNA…',
+  extracting: 'Reading the photo…',
 
-  checks: 'Checks',
+  checks: 'Palette checks',
+  more: 'More actions',
   checksTitle: 'Palette checks',
   checksSummary: (passed: number, total: number) => `${passed} of ${total} checks pass`,
   squint: 'Squint',

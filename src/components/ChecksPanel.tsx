@@ -1,20 +1,29 @@
+import { useEffect } from 'react'
 import { copy } from '../copy'
 import type { CheckStatus, PaletteReport } from '../lib/color/checks'
-import { AlertIcon, CheckIcon, CloseIcon, RatioIcon } from './Icons'
+import { AlertIcon, CheckIcon, CloseIcon } from './Icons'
 import { RolePreview } from './RolePreview'
 
 type Props = {
   report: PaletteReport
   hexes: string[]
-  proportional: boolean
-  onProportional: (on: boolean) => void
   onClose: () => void
 }
 
 const STATUS_ICON: Record<CheckStatus, typeof CheckIcon> = { pass: CheckIcon, warn: AlertIcon, fail: CloseIcon }
 
-/** Live, non-modal: Space keeps mutating while it is open, and the checks follow along. */
-export function ChecksPanel({ report, hexes, proportional, onProportional, onClose }: Props) {
+/** Pop-over above the ⓘ button. Non-modal: Space keeps mutating while it is open, and the checks follow along. */
+export function ChecksPanel({ report, hexes, onClose }: Props) {
+  // A tap anywhere else closes it; the ⓘ button toggles it itself.
+  useEffect(() => {
+    const onPointer = (e: PointerEvent) => {
+      const target = e.target as Element
+      if (!target.closest('#checks-panel, [aria-controls="checks-panel"]')) onClose()
+    }
+    document.addEventListener('pointerdown', onPointer)
+    return () => document.removeEventListener('pointerdown', onPointer)
+  }, [onClose])
+
   return (
     <aside id="checks-panel" className="checks" aria-labelledby="checks-title">
       <div className="checks__head">
@@ -51,10 +60,6 @@ export function ChecksPanel({ report, hexes, proportional, onProportional, onClo
       </ul>
 
       <RolePreview hexes={hexes} roles={report} />
-
-      <button type="button" className="btn btn--toggle checks__proportional" aria-pressed={proportional} onClick={() => onProportional(!proportional)}>
-        <RatioIcon /> {copy.proportional}
-      </button>
 
       <p className="checks__credit">
         <a href={copy.checksCreditUrl} target="_blank" rel="noopener">

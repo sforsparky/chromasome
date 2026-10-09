@@ -168,3 +168,18 @@ export const RatioIcon = (p: IconProps) => (
     <path d="M14 5v14M18.5 5v14" />
   </svg>
 )
+
+export const InfoIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v5M12 8h0" />
+  </svg>
+)
+
+export const MoreIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="5" r="1.2" fill="currentColor" />
+    <circle cx="12" cy="12" r="1.2" fill="currentColor" />
+    <circle cx="12" cy="19" r="1.2" fill="currentColor" />
+  </svg>
+)

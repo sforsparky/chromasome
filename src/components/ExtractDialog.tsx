@@ -79,9 +79,9 @@ export function ExtractDialog({ open, onClose }: Props) {
   }
 
   return (
-    <dialog ref={ref} className="dialog" onClose={close} aria-label={copy.extractDna}>
+    <dialog ref={ref} className="dialog" onClose={close} aria-label={copy.extractPhoto}>
       <div className="dialog__head">
-        <h2 className="dialog__title">{copy.extractDna}</h2>
+        <h2 className="dialog__title">{copy.extractPhoto}</h2>
         <button type="button" className="btn btn--icon btn--ghost" onClick={close} aria-label="Close">
           <CloseIcon />
         </button>
