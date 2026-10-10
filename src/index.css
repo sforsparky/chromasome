@@ -291,6 +291,18 @@ button:disabled {
   }
 }
 
+/* Added beside other columns: grows from nothing, so its neighbors make room instead of snapping narrower. */
+@starting-style {
+  .column--entering {
+    flex-grow: 0;
+  }
+}
+
+/* Adjusting: the color follows the slider or picker directly; a crossfade would trail the pointer. */
+.column.column--adjusting {
+  transition-property: opacity, transform, flex-grow;
+}
+
 /* First load only: cascade the columns and type the hex in once. */
 .board--intro .column {
   transition-delay: calc(var(--i) * 50ms);
@@ -1406,6 +1418,10 @@ body:has(.install) .toast {
   .consent,
   .preview__segment {
     transition-property: opacity, background-color, color, overlay, display;
+  }
+
+  .column.column--adjusting {
+    transition-property: opacity;
   }
 
   @starting-style {
