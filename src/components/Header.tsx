@@ -5,7 +5,8 @@ import { BrandMark, CoffeeIcon } from './Icons'
 const SPECTRUM = ['#ff4d6d', '#ff9f1c', '#ffd23f', '#3ddc84', '#2ec4ff', '#8a5cff']
 const CHROMA = copy.appName.slice(0, SPECTRUM.length)
 
-export function Header() {
+/** onCookieSettings is set only where cookie consent applies (EEA, UK, Switzerland). */
+export function Header({ onCookieSettings }: { onCookieSettings?: () => void }) {
   return (
     <header className="header">
       <a className="header__brand" href={copy.brandUrl} rel="noreferrer">
@@ -19,6 +20,11 @@ export function Header() {
           {copy.appName.slice(CHROMA.length)}
         </span>
       </a>
+      {onCookieSettings && (
+        <button type="button" className="header__cookies" onClick={onCookieSettings}>
+          {copy.cookies}
+        </button>
+      )}
       <a className="header__coffee" href={copy.coffeeUrl} target="_blank" rel="noopener noreferrer" aria-label={copy.coffee} title={copy.coffee}>
         <CoffeeIcon width={16} height={16} />
         <span className="header__coffee-label">{copy.coffee}</span>

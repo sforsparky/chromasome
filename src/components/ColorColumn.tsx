@@ -32,6 +32,8 @@ type Props = {
   share?: number
   squint: boolean
   showRole: boolean
+  /** Added beside columns that were already there (Add, or undoing a Remove), so it grows in from nothing. */
+  entering: boolean
 }
 
 const SWAP_MS = 200 // matches .column__hex-label transition
@@ -68,7 +70,7 @@ function useCopiedLabel(): { copied: boolean; swapping: boolean; flash: () => vo
   return { copied, swapping, flash }
 }
 
-export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag, dragging, dropTarget, role, share, squint, showRole }: Props) {
+export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag, dragging, dropTarget, role, share, squint, showRole, entering }: Props) {
   const { palette, dispatch } = usePalette()
   const shown = squint ? greyOf(swatch.hex) : swatch.hex
   const text = textColorFor(shown)
@@ -84,7 +86,14 @@ export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag,
 
   const closeAdjust = useCallback(() => onAdjust(null), [onAdjust])
 
-  const cls = ['column', swatch.locked && 'column--locked', dragging && 'column--dragging', dropTarget && 'column--drop-target']
+  const cls = [
+    'column',
+    swatch.locked && 'column--locked',
+    adjusting && 'column--adjusting',
+    entering && 'column--entering',
+    dragging && 'column--dragging',
+    dropTarget && 'column--drop-target',
+  ]
     .filter(Boolean)
     .join(' ')
 

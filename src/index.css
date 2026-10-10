@@ -146,6 +146,29 @@ button:disabled {
 }
 
 /* Quiet support link: muted like the rest of the header, the cup warms to coffee-yellow on hover. */
+/* Only where cookie consent applies; phones get "Cookie settings" in the ⋮ menu instead. */
+.header__cookies {
+  margin-left: auto;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color var(--t-fast) ease;
+}
+
+.header__cookies:hover {
+  color: var(--fg);
+}
+
+.header__cookies + .header__coffee {
+  margin-left: 0;
+}
+
 .header__coffee {
   margin-left: auto;
   display: inline-flex;
@@ -266,6 +289,18 @@ button:disabled {
     opacity: 0;
     transform: scale(0.98);
   }
+}
+
+/* Added beside other columns: grows from nothing, so its neighbors make room instead of snapping narrower. */
+@starting-style {
+  .column--entering {
+    flex-grow: 0;
+  }
+}
+
+/* Adjusting: the color follows the slider or picker directly; a crossfade would trail the pointer. */
+.column.column--adjusting {
+  transition-property: opacity, transform, flex-grow;
 }
 
 /* First load only: cascade the columns and type the hex in once. */
@@ -1236,6 +1271,52 @@ button:disabled {
 /* Toast -------------------------------------------------------------- */
 
 /* Enters and exits the same way: up from the toolbar, back down to it. */
+/* Cookie consent (EEA, UK, Switzerland) ------------------------------ */
+
+.consent {
+  position: fixed;
+  left: calc(16px + var(--safe-left));
+  bottom: calc(var(--toolbar-h) + 16px);
+  z-index: 25;
+  width: min(400px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 0.5);
+  transition:
+    opacity var(--t-dialog) var(--ease-out),
+    transform var(--t-dialog) var(--ease-out);
+}
+
+@starting-style {
+  .consent {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.consent__text {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.consent__text a {
+  color: var(--muted);
+}
+
+.consent__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Equal weight for both answers. */
+.consent__actions .btn {
+  flex: 1;
+  justify-content: center;
+}
+
 /* Install banner (phones) ------------------------------------------- */
 
 .install {
@@ -1334,8 +1415,13 @@ body:has(.install) .toast {
   .checks,
   .menu,
   .install,
+  .consent,
   .preview__segment {
     transition-property: opacity, background-color, color, overlay, display;
+  }
+
+  .column.column--adjusting {
+    transition-property: opacity;
   }
 
   @starting-style {
@@ -1490,6 +1576,21 @@ body:has(.install) .toast {
     .adjust {
       transform: scale(0.95);
     }
+  }
+
+  .header__cookies {
+    display: none;
+  }
+
+  .header__cookies + .header__coffee {
+    margin-left: auto;
+  }
+
+  .consent {
+    left: calc(8px + var(--safe-left));
+    right: calc(8px + var(--safe-right));
+    bottom: calc(var(--toolbar-h) + 8px);
+    width: auto;
   }
 
   /* One row on phones: the secondary actions live in the ⋮ menu. */

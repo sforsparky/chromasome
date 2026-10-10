@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from 'react'
 import { copy } from '../copy'
+import { track } from '../lib/analytics/ga'
 import { iosInstallHint, isStandalone } from '../lib/install/platform'
 import { getInstallPrompt, listenForInstallPrompt, runInstallPrompt, subscribeInstallPrompt } from '../lib/install/prompt'
 import { usePalette } from '../state/PaletteProvider'
@@ -51,6 +52,7 @@ export function InstallBanner({ hidden }: { hidden: boolean }) {
   const dismiss = () => {
     setDismissed(true)
     writeDismissed()
+    track('install_banner_dismiss', { platform: androidPrompt ? 'android' : 'ios' })
   }
 
   return (
@@ -70,7 +72,7 @@ export function InstallBanner({ hidden }: { hidden: boolean }) {
         </span>
       </div>
       {androidPrompt && (
-        <button type="button" className="btn btn--primary install__go" onClick={() => void runInstallPrompt()}>
+        <button type="button" className="btn btn--primary install__go" onClick={() => void runInstallPrompt().then((ok) => track('install_prompt', { outcome: ok ? 'accepted' : 'dismissed' }))}>
           {copy.install}
         </button>
       )}
