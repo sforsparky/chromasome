@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { copy } from '../copy'
 import { textColorFor } from '../lib/color/contrast'
 import { nearestName } from '../lib/color/names'
@@ -7,7 +7,6 @@ import type { Role } from '../lib/color/roles'
 import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
 import { usePresence } from '../state/usePresence'
-import { useSequencing } from '../state/useSequencing'
 import { MIN_COLORS, type Swatch } from '../state/types'
 import { AdjustPanel } from './AdjustPanel'
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, CloseIcon, GripIcon, LockIcon, SlidersIcon, UnlockIcon } from './Icons'
@@ -121,10 +120,8 @@ function useLeave(id: string, count: number): { leaving: boolean; remove: (colum
 }
 
 export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag, dragging, dropTarget, role, share, squint, showRole, entering }: Props) {
-  const { palette, dispatch, state } = usePalette()
-  const seq = useSequencing(swatch.hex, swatch.locked, index, state.generation)
-  const sequencing = seq.phase === 'scan' || seq.phase === 'lock' || seq.phase === 'settle'
-  const shown = squint ? greyOf(seq.displayHex) : seq.displayHex
+  const { palette, dispatch } = usePalette()
+  const shown = squint ? greyOf(swatch.hex) : swatch.hex
   const text = textColorFor(shown)
   const roleLabel = copy.roleLabels[role]
   const name = nearestName(swatch.hex)
@@ -149,8 +146,6 @@ export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag,
     leaving && 'column--leaving',
     dragging && 'column--dragging',
     dropTarget && 'column--drop-target',
-    sequencing && 'column--sequencing',
-    `column--seq-${seq.phase}`,
   ]
     .filter(Boolean)
     .join(' ')
@@ -159,7 +154,7 @@ export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag,
     <div
       ref={rootRef}
       className={cls}
-      style={{ backgroundColor: shown, color: text, flexGrow: share }}
+      style={{ backgroundColor: shown, color: text, flexGrow: share, '--i': index } as CSSProperties}
       role="listitem"
       aria-label={`${swatch.hex} ${name}${showRole ? `, ${roleLabel}` : ''}${swatch.locked ? ', locked' : ''}`}
     >
@@ -224,24 +219,20 @@ export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag,
 
       {adjustPanel.mounted && <AdjustPanel swatch={swatch} onClose={closeAdjust} closing={adjustPanel.closing} />}
 
-      {(seq.phase === 'scan' || seq.phase === 'lock') && <div className="column__scan" aria-hidden="true" />}
-      {seq.phase === 'settle' && <div className="column__band" aria-hidden="true" />}
-
       <div className="column__info">
         <button type="button" className="column__hex" onClick={copyHex} title="Copy hex" aria-label={`Copy ${swatch.hex}`}>
           <span className={`column__hex-label${swapping ? ' column__hex-label--swapping' : ''}`} aria-live="polite">
-            {copied ? (
-              copy.toastCopied
-            ) : (
-              // Hidden from the live region, so the scrambling glyphs are never announced; only "Copied" is.
-              <span aria-hidden="true">
-                {seq.glyphs.split('').map((ch, g) => (
-                  <span key={g} className={`glyph${sequencing ? (g < seq.resolved ? ' glyph--set' : ' glyph--noise') : ''}`}>
-                    {ch}
-                  </span>
-                ))}
-              </span>
-            )}
+            {copied
+              ? copy.toastCopied
+              : swatch.hex
+                  .slice(1)
+                  .toUpperCase()
+                  .split('')
+                  .map((ch, g) => (
+                    <span key={g} className="glyph" style={{ '--g': g } as CSSProperties}>
+                      {ch}
+                    </span>
+                  ))}
           </span>
         </button>
         <span className="column__name">{name}</span>
