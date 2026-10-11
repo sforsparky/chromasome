@@ -94,6 +94,13 @@ export function PaletteBoard({ adjustingId, onAdjust, report, squint, proportion
   const [dragFrom, setDragFrom] = useState<number | null>(null)
   const [dragOver, setDragOver] = useState<number | null>(null)
 
+  // First-load reveal: the intro cascade runs once, then columns enter plainly.
+  const [intro, setIntro] = useState(true)
+  useEffect(() => {
+    const t = window.setTimeout(() => setIntro(false), 1200)
+    return () => window.clearTimeout(t)
+  }, [])
+
   const ids = useMemo(() => palette.map((s) => s.id), [palette])
   useReorderGlide(boardRef, ids, stacked)
 
@@ -167,7 +174,7 @@ export function PaletteBoard({ adjustingId, onAdjust, report, squint, proportion
     return () => window.removeEventListener('keydown', onKey)
   }, [dragFrom, endDrag])
 
-  const cls = ['board', dragFrom !== null && 'board--dragging', proportional && 'board--proportional'].filter(Boolean).join(' ')
+  const cls = ['board', intro && 'board--intro', dragFrom !== null && 'board--dragging', proportional && 'board--proportional'].filter(Boolean).join(' ')
 
   return (
     <main className={cls} role="list" aria-label="Palette" ref={boardRef}>
