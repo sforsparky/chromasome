@@ -146,6 +146,29 @@ button:disabled {
 }
 
 /* Quiet support link: muted like the rest of the header, the cup warms to coffee-yellow on hover. */
+/* Only where cookie consent applies; phones get "Cookie settings" in the ⋮ menu instead. */
+.header__cookies {
+  margin-left: auto;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color var(--t-fast) ease;
+}
+
+.header__cookies:hover {
+  color: var(--fg);
+}
+
+.header__cookies + .header__coffee {
+  margin-left: 0;
+}
+
 .header__coffee {
   margin-left: auto;
   display: inline-flex;
@@ -268,29 +291,137 @@ button:disabled {
   }
 }
 
-/* First load only: cascade the columns and type the hex in once. */
-.board--intro .column {
-  transition-delay: calc(var(--i) * 50ms);
+/* Added beside other columns: grows from nothing, so its neighbors make room instead of snapping narrower. */
+@starting-style {
+  .column--entering {
+    flex-grow: 0;
+  }
 }
 
-.board--intro .glyph {
-  animation: glyph-in 220ms var(--ease-out) backwards;
-  animation-delay: calc(var(--i) * 50ms + 120ms + var(--g) * 28ms);
+/* Adjusting: the color follows the slider or picker directly; a crossfade would trail the pointer. */
+.column.column--adjusting {
+  transition-property: opacity, transform, flex-grow;
 }
 
-@keyframes glyph-in {
+/* Sequencing (useSequencing.ts): Mutate, Extract and first load scan each unlocked column, staggered left to
+   right, before it settles on its new color. A scan line sweeps, the background flickers through candidates and
+   the hex scrambles; the glyphs then resolve one by one and a band marker fades. Locked columns pulse their lock. */
+
+/* The flicker steps between candidates; a crossfade would smear it. Every other transition carries on. */
+.column--seq-scan {
+  transition-property: color, opacity, transform, flex-grow;
+}
+
+/* The frame clips the line's glow to its own column; stacked rows on phones would otherwise light their neighbors. */
+.column__scan {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.column__scan::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  top: 0;
+  background: currentColor;
+  opacity: 0.85;
+  box-shadow:
+    0 0 10px currentColor,
+    0 0 28px currentColor;
+  animation: seq-scan 0.35s linear infinite;
+}
+
+.column--seq-lock .column__scan::before {
+  animation-duration: 0.2s;
+  opacity: 0.4;
+}
+
+@keyframes seq-scan {
   from {
-    opacity: 0;
-    transform: translateY(4px);
+    top: 0;
   }
   to {
-    opacity: 1;
-    transform: none;
+    top: 100%;
   }
+}
+
+.column__band {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 118px;
+  height: 2px;
+  background: currentColor;
+  opacity: 0;
+  animation: seq-band 0.3s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes seq-band {
+  0% {
+    opacity: 0.9;
+    transform: scaleX(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+.glyph--noise {
+  opacity: 0.55;
+}
+
+.glyph--set {
+  animation: seq-tick 0.18s ease-out;
+}
+
+@keyframes seq-tick {
+  0% {
+    transform: translateY(-3px) scale(1.15);
+    filter: brightness(1.6);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+
+.column--sequencing .column__name {
+  opacity: 0;
+}
+
+.column--seq-skipped .column__btn--lock {
+  animation: seq-lock-pulse 0.5s ease-out;
+}
+
+@keyframes seq-lock-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 14px color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+
+.column--seq-skipped .column__controls {
+  opacity: 1;
 }
 
 .column--dragging {
   opacity: 0.5;
+}
+
+/* Removing: narrows to nothing (useLeave in ColorColumn.tsx), so no minimum size or content may hold it open. */
+.board .column.column--leaving {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .column--drop-target::before {
@@ -455,6 +586,7 @@ button:disabled {
   font-size: 13px;
   opacity: 0.75;
   min-height: 1.2em;
+  transition: opacity var(--t-dialog) ease; /* back in after sequencing */
 }
 
 /* Inserter ----------------------------------------------------------- */
@@ -1236,6 +1368,52 @@ button:disabled {
 /* Toast -------------------------------------------------------------- */
 
 /* Enters and exits the same way: up from the toolbar, back down to it. */
+/* Cookie consent (EEA, UK, Switzerland) ------------------------------ */
+
+.consent {
+  position: fixed;
+  left: calc(16px + var(--safe-left));
+  bottom: calc(var(--toolbar-h) + 16px);
+  z-index: 25;
+  width: min(400px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 0.5);
+  transition:
+    opacity var(--t-dialog) var(--ease-out),
+    transform var(--t-dialog) var(--ease-out);
+}
+
+@starting-style {
+  .consent {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.consent__text {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.consent__text a {
+  color: var(--muted);
+}
+
+.consent__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Equal weight for both answers. */
+.consent__actions .btn {
+  flex: 1;
+  justify-content: center;
+}
+
 /* Install banner (phones) ------------------------------------------- */
 
 .install {
@@ -1322,6 +1500,32 @@ body:has(.install) .toast {
   transition-duration: var(--t-dialog);
 }
 
+/* Exits: panels, the menu and the consent banner leave the way they came, a little quicker (usePresence) ---- */
+
+.adjust.is-closing,
+.checks.is-closing,
+.menu.is-closing,
+.consent.is-closing {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: var(--t-fast);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .adjust.is-closing {
+    transform: translateX(-50%) scale(0.97);
+  }
+
+  .checks.is-closing,
+  .menu.is-closing {
+    transform: translateY(4px) scale(0.98);
+  }
+
+  .consent.is-closing {
+    transform: translateY(8px);
+  }
+}
+
 /* Reduced motion: keep the fades and color changes, drop the movement ---- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1334,8 +1538,13 @@ body:has(.install) .toast {
   .checks,
   .menu,
   .install,
+  .consent,
   .preview__segment {
     transition-property: opacity, background-color, color, overlay, display;
+  }
+
+  .column.column--adjusting {
+    transition-property: opacity;
   }
 
   @starting-style {
@@ -1345,12 +1554,11 @@ body:has(.install) .toast {
     }
   }
 
-  .board--intro .column {
-    transition-delay: 0ms;
-  }
-
-  .board--intro .glyph,
-  .extract__swatch {
+  .extract__swatch,
+  .column__scan::before,
+  .column__band,
+  .glyph--set,
+  .column--seq-skipped .column__btn--lock {
     animation: none;
   }
 
@@ -1492,6 +1700,27 @@ body:has(.install) .toast {
     }
   }
 
+  @media (prefers-reduced-motion: no-preference) {
+    .adjust.is-closing {
+      transform: scale(0.97);
+    }
+  }
+
+  .header__cookies {
+    display: none;
+  }
+
+  .header__cookies + .header__coffee {
+    margin-left: auto;
+  }
+
+  .consent {
+    left: calc(8px + var(--safe-left));
+    right: calc(8px + var(--safe-right));
+    bottom: calc(var(--toolbar-h) + 8px);
+    width: auto;
+  }
+
   /* One row on phones: the secondary actions live in the ⋮ menu. */
   .toolbar {
     padding: 0 calc(12px + var(--safe-right)) var(--safe-bottom) calc(12px + var(--safe-left));
@@ -1539,6 +1768,11 @@ body:has(.install) .toast {
   }
 
   .column__role:not(.is-on) {
+    display: none;
+  }
+
+  /* Placed for the tall desktop column; a stacked row is too short for it. */
+  .column__band {
     display: none;
   }
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { copy } from '../copy'
+import { track } from '../lib/analytics/ga'
 import { canCopyImages, copyBlob, copyText, downloadBlob, downloadText } from '../lib/export/clipboard'
 import { exportAs, exportFilename, FORMAT_EXTENSIONS, FORMAT_LABELS, type ExportFormat } from '../lib/export/formats'
 import { renderPalettePng, type PngLayout } from '../lib/export/png'
@@ -64,6 +65,7 @@ export function ExportDialog({ open, onClose, proportional }: Props) {
       await copyText(text)
     }
     toast.show(copy.toastCopied)
+    track('export', { format: tab, method: 'copy' })
   }
 
   const onDownload = () => {
@@ -74,6 +76,7 @@ export function ExportDialog({ open, onClose, proportional }: Props) {
       downloadText(text, exportFilename(palette, FORMAT_EXTENSIONS[tab]), MIME[tab])
     }
     toast.show(copy.toastDownloaded)
+    track('export', { format: tab, method: 'download' })
   }
 
   return (

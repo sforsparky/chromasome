@@ -169,6 +169,13 @@ export const ShareIcon = (p: IconProps) => (
   </svg>
 )
 
+export const CookieIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 3a9 9 0 1 0 9 9 3 3 0 0 1-3.5-3A3 3 0 0 1 14 5.5 3 3 0 0 1 12 3Z" />
+    <path d="M8.5 9.5h.01M15 15h.01M10 15.5h.01" />
+  </svg>
+)
+
 export const MoreIcon = (p: IconProps) => (
   <svg {...base(p)}>
     <circle cx="12" cy="5" r="1.2" fill="currentColor" />

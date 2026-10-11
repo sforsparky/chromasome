@@ -51,6 +51,14 @@ Because the palette is in the URL hash, no server-side rewrite rules are needed 
 
 `.github/workflows/ci.yml` runs lint, tests and a build on every push to `main` and on every pull request.
 
+## Analytics and consent
+
+The live site (chromasome.inmydna.com only) uses Google Analytics 4, the same property as inmydna.com. It records a few events: `mutate`, `squint_on`, `size_by_role_on`, `copy_color_code`, `export`, `extract_photo`, `install_prompt` and `install_banner_dismiss`. Ad storage is always denied.
+
+Visitors in the EEA, the UK and Switzerland see a cookie banner first, and Google Analytics loads only after they accept. The Netlify edge function `netlify/edge-functions/geo.ts` adds the visitor's country to the page; when it's missing, a European time zone counts as needing consent. They can change their answer from **Cookies** in the header, or **Cookie settings** in the ⋮ menu on phones. Withdrawing consent also removes the `_ga` cookies.
+
+Deploy previews and local builds never load analytics.
+
 ## Project layout
 
 ```

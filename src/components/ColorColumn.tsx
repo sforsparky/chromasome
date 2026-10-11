@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
 import { copy } from '../copy'
 import { textColorFor } from '../lib/color/contrast'
 import { nearestName } from '../lib/color/names'
@@ -6,6 +6,8 @@ import { greyOf } from '../lib/color/oklch'
 import type { Role } from '../lib/color/roles'
 import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
+import { usePresence } from '../state/usePresence'
+import { useSequencing } from '../state/useSequencing'
 import { MIN_COLORS, type Swatch } from '../state/types'
 import { AdjustPanel } from './AdjustPanel'
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, CloseIcon, GripIcon, LockIcon, SlidersIcon, UnlockIcon } from './Icons'
@@ -32,6 +34,8 @@ type Props = {
   share?: number
   squint: boolean
   showRole: boolean
+  /** Added beside columns that were already there (Add, or undoing a Remove), so it grows in from nothing. */
+  entering: boolean
 }
 
 const SWAP_MS = 200 // matches .column__hex-label transition
@@ -68,14 +72,65 @@ function useCopiedLabel(): { copied: boolean; swapping: boolean; flash: () => vo
   return { copied, swapping, flash }
 }
 
-export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag, dragging, dropTarget, role, share, squint, showRole }: Props) {
-  const { palette, dispatch } = usePalette()
-  const shown = squint ? greyOf(swatch.hex) : swatch.hex
+const LEAVE_MS = 200 // --t-dialog
+const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)' // --ease-out
+
+/**
+ * Remove: the column narrows to nothing and fades while its neighbors widen into the space, then it is removed.
+ * With reduced motion it only fades. If another column's removal brought the strand down to its minimum
+ * meanwhile, the reducer would ignore this one, so it stays and settles back.
+ */
+function useLeave(id: string, count: number): { leaving: boolean; remove: (column: HTMLElement | null) => void } {
+  const { dispatch } = usePalette()
+  const [leaving, setLeaving] = useState(false)
+  const latestCount = useRef(count)
+  useEffect(() => {
+    latestCount.current = count
+  })
+
+  const remove = (column: HTMLElement | null) => {
+    if (leaving) return
+    if (!column || typeof column.animate !== 'function') {
+      dispatch({ type: 'REMOVE', id })
+      return
+    }
+    setLeaving(true)
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const grow = getComputedStyle(column).flexGrow
+    const frames = still
+      ? [{ opacity: 1 }, { opacity: 0 }]
+      : [
+          { opacity: 1, flexGrow: grow },
+          { opacity: 0, flexGrow: '0' },
+        ]
+    const exit = column.animate(frames, { duration: LEAVE_MS, easing: EASE_OUT, fill: 'forwards' })
+    exit.finished.then(
+      () => {
+        if (latestCount.current > MIN_COLORS) {
+          dispatch({ type: 'REMOVE', id })
+          return
+        }
+        exit.cancel()
+        setLeaving(false)
+      },
+      () => setLeaving(false),
+    )
+  }
+
+  return { leaving, remove }
+}
+
+export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag, dragging, dropTarget, role, share, squint, showRole, entering }: Props) {
+  const { palette, dispatch, state } = usePalette()
+  const seq = useSequencing(swatch.hex, swatch.locked, index, state.generation)
+  const sequencing = seq.phase === 'scan' || seq.phase === 'lock' || seq.phase === 'settle'
+  const shown = squint ? greyOf(seq.displayHex) : seq.displayHex
   const text = textColorFor(shown)
   const roleLabel = copy.roleLabels[role]
   const name = nearestName(swatch.hex)
   const n = palette.length
   const { copied, swapping, flash } = useCopiedLabel()
+  const rootRef = useRef<HTMLDivElement>(null)
 
   const copyHex = async () => {
     await copyText(swatch.hex)
@@ -83,15 +138,28 @@ export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag,
   }
 
   const closeAdjust = useCallback(() => onAdjust(null), [onAdjust])
+  const adjustPanel = usePresence(adjusting)
+  const { leaving, remove } = useLeave(swatch.id, n)
 
-  const cls = ['column', swatch.locked && 'column--locked', dragging && 'column--dragging', dropTarget && 'column--drop-target']
+  const cls = [
+    'column',
+    swatch.locked && 'column--locked',
+    adjusting && 'column--adjusting',
+    entering && 'column--entering',
+    leaving && 'column--leaving',
+    dragging && 'column--dragging',
+    dropTarget && 'column--drop-target',
+    sequencing && 'column--sequencing',
+    `column--seq-${seq.phase}`,
+  ]
     .filter(Boolean)
     .join(' ')
 
   return (
     <div
+      ref={rootRef}
       className={cls}
-      style={{ backgroundColor: shown, color: text, flexGrow: share, '--i': index } as CSSProperties}
+      style={{ backgroundColor: shown, color: text, flexGrow: share }}
       role="listitem"
       aria-label={`${swatch.hex} ${name}${showRole ? `, ${roleLabel}` : ''}${swatch.locked ? ', locked' : ''}`}
     >
@@ -113,7 +181,7 @@ export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag,
           <GripIcon />
         </button>
         {n > MIN_COLORS && (
-          <button type="button" className="column__btn" onClick={() => dispatch({ type: 'REMOVE', id: swatch.id })} aria-label={copy.remove} title={copy.remove}>
+          <button type="button" className="column__btn" onClick={() => remove(rootRef.current)} aria-label={copy.remove} title={copy.remove}>
             <CloseIcon />
           </button>
         )}
@@ -154,22 +222,26 @@ export function ColorColumn({ swatch, index, stacked, adjusting, onAdjust, drag,
         </button>
       </div>
 
-      {adjusting && <AdjustPanel swatch={swatch} onClose={closeAdjust} />}
+      {adjustPanel.mounted && <AdjustPanel swatch={swatch} onClose={closeAdjust} closing={adjustPanel.closing} />}
+
+      {(seq.phase === 'scan' || seq.phase === 'lock') && <div className="column__scan" aria-hidden="true" />}
+      {seq.phase === 'settle' && <div className="column__band" aria-hidden="true" />}
 
       <div className="column__info">
         <button type="button" className="column__hex" onClick={copyHex} title="Copy hex" aria-label={`Copy ${swatch.hex}`}>
           <span className={`column__hex-label${swapping ? ' column__hex-label--swapping' : ''}`} aria-live="polite">
-            {copied
-              ? copy.toastCopied
-              : swatch.hex
-                  .slice(1)
-                  .toUpperCase()
-                  .split('')
-                  .map((ch, g) => (
-                    <span key={g} className="glyph" style={{ '--g': g } as CSSProperties}>
-                      {ch}
-                    </span>
-                  ))}
+            {copied ? (
+              copy.toastCopied
+            ) : (
+              // Hidden from the live region, so the scrambling glyphs are never announced; only "Copied" is.
+              <span aria-hidden="true">
+                {seq.glyphs.split('').map((ch, g) => (
+                  <span key={g} className={`glyph${sequencing ? (g < seq.resolved ? ' glyph--set' : ' glyph--noise') : ''}`}>
+                    {ch}
+                  </span>
+                ))}
+              </span>
+            )}
           </span>
         </button>
         <span className="column__name">{name}</span>
