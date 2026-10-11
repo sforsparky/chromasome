@@ -328,6 +328,14 @@ button:disabled {
   opacity: 0.5;
 }
 
+/* Removing: narrows to nothing (useLeave in ColorColumn.tsx), so no minimum size or content may hold it open. */
+.board .column.column--leaving {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .column--drop-target::before {
   content: '';
   position: absolute;
@@ -1403,6 +1411,32 @@ body:has(.install) .toast {
   transition-duration: var(--t-dialog);
 }
 
+/* Exits: panels, the menu and the consent banner leave the way they came, a little quicker (usePresence) ---- */
+
+.adjust.is-closing,
+.checks.is-closing,
+.menu.is-closing,
+.consent.is-closing {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: var(--t-fast);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .adjust.is-closing {
+    transform: translateX(-50%) scale(0.97);
+  }
+
+  .checks.is-closing,
+  .menu.is-closing {
+    transform: translateY(4px) scale(0.98);
+  }
+
+  .consent.is-closing {
+    transform: translateY(8px);
+  }
+}
+
 /* Reduced motion: keep the fades and color changes, drop the movement ---- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1575,6 +1609,12 @@ body:has(.install) .toast {
   @starting-style {
     .adjust {
       transform: scale(0.95);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .adjust.is-closing {
+      transform: scale(0.97);
     }
   }
 

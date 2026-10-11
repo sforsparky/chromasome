@@ -8,12 +8,14 @@ import { CloseIcon } from './Icons'
 type Props = {
   swatch: Swatch
   onClose: () => void
+  /** Playing its exit: no longer listens or takes clicks. Not inert, since the blur that causes would commit a typed hex. */
+  closing: boolean
 }
 
 /** Keys that change a range input's value; only these start an edit session. */
 const SLIDER_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'])
 
-export function AdjustPanel({ swatch, onClose }: Props) {
+export function AdjustPanel({ swatch, onClose, closing }: Props) {
   const { dispatch } = usePalette()
   const [draft, setDraft] = useState(swatch.hex)
   const [syncedHex, setSyncedHex] = useState(swatch.hex)
@@ -29,12 +31,13 @@ export function AdjustPanel({ swatch, onClose }: Props) {
 
   // Click outside closes.
   useEffect(() => {
+    if (closing) return
     const onPointerDown = (e: PointerEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose()
     }
     document.addEventListener('pointerdown', onPointerDown)
     return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [onClose])
+  }, [onClose, closing])
 
   /** One history entry per slider drag / text edit session. */
   const beginEdit = () => {
@@ -68,7 +71,7 @@ export function AdjustPanel({ swatch, onClose }: Props) {
   }
 
   return (
-    <div className="adjust" ref={panelRef} role="dialog" aria-label={`${copy.adjust} ${swatch.hex}`}>
+    <div className={`adjust${closing ? ' is-closing' : ''}`} ref={panelRef} role="dialog" aria-label={`${copy.adjust} ${swatch.hex}`}>
       <div className="adjust__row adjust__row--head">
         <input
           className="adjust__hex"
