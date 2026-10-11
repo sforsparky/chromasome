@@ -303,25 +303,113 @@ button:disabled {
   transition-property: opacity, transform, flex-grow;
 }
 
-/* First load only: cascade the columns and type the hex in once. */
-.board--intro .column {
-  transition-delay: calc(var(--i) * 50ms);
+/* Sequencing (useSequencing.ts): Mutate, Extract and first load scan each unlocked column, staggered left to
+   right, before it settles on its new color. A scan line sweeps, the background flickers through candidates and
+   the hex scrambles; the glyphs then resolve one by one and a band marker fades. Locked columns pulse their lock. */
+
+/* The flicker steps between candidates; a crossfade would smear it. Every other transition carries on. */
+.column--seq-scan {
+  transition-property: color, opacity, transform, flex-grow;
 }
 
-.board--intro .glyph {
-  animation: glyph-in 220ms var(--ease-out) backwards;
-  animation-delay: calc(var(--i) * 50ms + 120ms + var(--g) * 28ms);
+/* The frame clips the line's glow to its own column; stacked rows on phones would otherwise light their neighbors. */
+.column__scan {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-@keyframes glyph-in {
+.column__scan::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  top: 0;
+  background: currentColor;
+  opacity: 0.85;
+  box-shadow:
+    0 0 10px currentColor,
+    0 0 28px currentColor;
+  animation: seq-scan 0.35s linear infinite;
+}
+
+.column--seq-lock .column__scan::before {
+  animation-duration: 0.2s;
+  opacity: 0.4;
+}
+
+@keyframes seq-scan {
   from {
-    opacity: 0;
-    transform: translateY(4px);
+    top: 0;
   }
   to {
-    opacity: 1;
-    transform: none;
+    top: 100%;
   }
+}
+
+.column__band {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 118px;
+  height: 2px;
+  background: currentColor;
+  opacity: 0;
+  animation: seq-band 0.3s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes seq-band {
+  0% {
+    opacity: 0.9;
+    transform: scaleX(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+.glyph--noise {
+  opacity: 0.55;
+}
+
+.glyph--set {
+  animation: seq-tick 0.18s ease-out;
+}
+
+@keyframes seq-tick {
+  0% {
+    transform: translateY(-3px) scale(1.15);
+    filter: brightness(1.6);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+
+.column--sequencing .column__name {
+  opacity: 0;
+}
+
+.column--seq-skipped .column__btn--lock {
+  animation: seq-lock-pulse 0.5s ease-out;
+}
+
+@keyframes seq-lock-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 14px color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+
+.column--seq-skipped .column__controls {
+  opacity: 1;
 }
 
 .column--dragging {
@@ -498,6 +586,7 @@ button:disabled {
   font-size: 13px;
   opacity: 0.75;
   min-height: 1.2em;
+  transition: opacity var(--t-dialog) ease; /* back in after sequencing */
 }
 
 /* Inserter ----------------------------------------------------------- */
@@ -1465,12 +1554,11 @@ body:has(.install) .toast {
     }
   }
 
-  .board--intro .column {
-    transition-delay: 0ms;
-  }
-
-  .board--intro .glyph,
-  .extract__swatch {
+  .extract__swatch,
+  .column__scan::before,
+  .column__band,
+  .glyph--set,
+  .column--seq-skipped .column__btn--lock {
     animation: none;
   }
 
@@ -1680,6 +1768,11 @@ body:has(.install) .toast {
   }
 
   .column__role:not(.is-on) {
+    display: none;
+  }
+
+  /* Placed for the tall desktop column; a stacked row is too short for it. */
+  .column__band {
     display: none;
   }
 
