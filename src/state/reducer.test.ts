@@ -76,6 +76,21 @@ describe('reducer', () => {
     expect(reducer(s, { type: 'REDO' })).toBe(s)
   })
 
+  it('generation advances on MUTATE and LOAD only', () => {
+    let s = start()
+    expect(s.generation).toBe(0)
+    s = reducer(s, { type: 'MUTATE' })
+    expect(s.generation).toBe(1)
+    s = reducer(s, { type: 'LOAD', hexes: ['#000000', '#ffffff'] })
+    expect(s.generation).toBe(2)
+    s = reducer(s, { type: 'UNDO' })
+    s = reducer(s, { type: 'TOGGLE_LOCK', id: s.present[0].id })
+    s = reducer(s, { type: 'BEGIN_EDIT' })
+    s = reducer(s, { type: 'SET_HEX', id: s.present[0].id, hex: '#123456' })
+    s = reducer(s, { type: 'ADD', index: 0 })
+    expect(s.generation).toBe(2)
+  })
+
   it('LOAD ignores invalid sizes', () => {
     const s = start()
     expect(reducer(s, { type: 'LOAD', hexes: ['#000000'] })).toBe(s)
