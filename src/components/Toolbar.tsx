@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 import { copy } from '../copy'
 import { copyText } from '../lib/export/clipboard'
 import { usePalette } from '../state/PaletteProvider'
+import { usePresence } from '../state/usePresence'
 import { ChecksIcon, CookieIcon, DownloadIcon, EyeIcon, ImageIcon, LinkIcon, MoreIcon, RatioIcon, RedoIcon, UndoIcon } from './Icons'
 import { track } from '../lib/analytics/ga'
 import { useToast } from './Toast'
@@ -87,6 +88,7 @@ type Action = { label: string; icon: ReactNode; run: () => void }
 /** Phones: the secondary actions fold into a ⋮ menu so the toolbar fits on one row. */
 function MoreMenu({ actions }: { actions: Action[] }) {
   const [open, setOpen] = useState(false)
+  const menu = usePresence(open)
   const wrapRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
@@ -122,8 +124,8 @@ function MoreMenu({ actions }: { actions: Action[] }) {
       >
         <MoreIcon />
       </button>
-      {open && (
-        <div className="menu" role="menu" aria-label={copy.more}>
+      {menu.mounted && (
+        <div className={`menu${menu.closing ? ' is-closing' : ''}`} role="menu" aria-label={copy.more} inert={menu.closing}>
           {actions.map((a) => (
             <button
               key={a.label}

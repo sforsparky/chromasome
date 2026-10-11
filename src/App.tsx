@@ -14,6 +14,7 @@ import { decodeHash } from './lib/url/codec'
 import { PaletteProvider, usePalette } from './state/PaletteProvider'
 import { useAnalytics } from './state/useAnalytics'
 import { useKeyboard } from './state/useKeyboard'
+import { usePresence } from './state/usePresence'
 import { useUrlSync } from './state/useUrlSync'
 
 /** Phones: "Don't show again" on the checks sheet, remembered per device. Storage can be unavailable (private mode). */
@@ -51,6 +52,8 @@ function Shell() {
   }, [])
   const checksButton = useRef<HTMLButtonElement>(null)
   const analytics = useAnalytics()
+  const checks = usePresence(checksOpen)
+  const consent = usePresence(analytics.showBanner)
 
   const changeSquint = useCallback((on: boolean) => {
     setSquint(on)
@@ -99,11 +102,15 @@ function Shell() {
         checksButtonRef={checksButton}
         autoChecks={!quietChecks}
         onCookieSettings={analytics.openSettings}
-        checksPopover={checksOpen && <ChecksPanel report={report} hexes={hexes} onClose={closeChecks} quiet={quietChecks} onQuiet={changeQuietChecks} />}
+        checksPopover={
+          checks.mounted && (
+            <ChecksPanel report={report} hexes={hexes} onClose={closeChecks} quiet={quietChecks} onQuiet={changeQuietChecks} closing={checks.closing} />
+          )
+        }
       />
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} proportional={proportional} />
       <ExtractDialog open={extractOpen} onClose={() => setExtractOpen(false)} />
-      {analytics.showBanner && <ConsentBanner onDecide={analytics.decide} />}
+      {consent.mounted && <ConsentBanner onDecide={analytics.decide} closing={consent.closing} />}
     </div>
   )
 }

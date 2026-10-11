@@ -11,24 +11,27 @@ type Props = {
   /** Phones: "Don't show again" stops the sheet opening when the board is sized by role. */
   quiet: boolean
   onQuiet: (quiet: boolean) => void
+  /** Playing its exit: no longer listens or takes clicks. */
+  closing: boolean
 }
 
 const STATUS_ICON: Record<CheckStatus, typeof CheckIcon> = { pass: CheckIcon, warn: AlertIcon, fail: CloseIcon }
 
 /** Pop-over above the "Size board by role" button. Non-modal: Space keeps mutating while it is open, and the checks follow along. */
-export function ChecksPanel({ report, hexes, onClose, quiet, onQuiet }: Props) {
+export function ChecksPanel({ report, hexes, onClose, quiet, onQuiet, closing }: Props) {
   // A tap anywhere else closes it; taps on the size button are handled there.
   useEffect(() => {
+    if (closing) return
     const onPointer = (e: PointerEvent) => {
       const target = e.target as Element
       if (!target.closest('#checks-panel, [aria-controls="checks-panel"]')) onClose()
     }
     document.addEventListener('pointerdown', onPointer)
     return () => document.removeEventListener('pointerdown', onPointer)
-  }, [onClose])
+  }, [onClose, closing])
 
   return (
-    <aside id="checks-panel" className="checks" aria-labelledby="checks-title">
+    <aside id="checks-panel" className={`checks${closing ? ' is-closing' : ''}`} aria-labelledby="checks-title" inert={closing}>
       <div className="checks__head">
         <h2 id="checks-title" className="checks__title">
           {copy.checksTitle}
